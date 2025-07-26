@@ -1,0 +1,71 @@
+<div class="row g-4 mb-4">
+  <div class="col-md-3">
+    <div class="card-box bg-white border p-4 text-center rounded">
+      <h5 class="text-muted">Total Tareas</h5>
+      <h3>324</h3>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card-box bg-white border p-4 text-center rounded">
+      <h5 class="text-muted">Usuarios</h5>
+      <h3>45</h3>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card-box bg-white border p-4 text-center rounded">
+      <h5 class="text-muted">Sesiones Activas</h5>
+      <h3>12</h3>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card-box bg-white border p-4 text-center rounded">
+      <h5 class="text-muted">Documentos Exportados</h5>
+      <h3>89</h3>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-8">
+    <div class="bg-white border rounded p-4">
+      <h5 class="mb-3">Rendimiento mensual</h5>
+      <canvas id="lineChart"></canvas>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="bg-white border rounded p-4">
+      <h5 class="mb-3">Distribución por módulo</h5>
+      <canvas id="pieChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ctxLine = document.getElementById('lineChart');
+  const lineChart = new Chart(ctxLine, {
+    type: 'line',
+    data: {
+      labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May'],
+      datasets: [{
+        label: 'Tareas completadas',
+        data: [12, 19, 3, 5, 7],
+        borderColor: '#0d6efd',
+        borderWidth: 2
+      }]
+    },
+    options: { responsive: true }
+  });
+
+  const ctxPie = document.getElementById('pieChart');
+  const pieChart = new Chart(ctxPie, {
+    type: 'doughnut',
+    data: {
+      labels: ['Usuarios', 'Tareas', 'Reportes'],
+      datasets: [{
+        data: [40, 35, 25],
+        backgroundColor: ['#0d6efd', '#6c757d', '#adb5bd']
+      }]
+    },
+    options: { responsive: true }
+  });
+</script>

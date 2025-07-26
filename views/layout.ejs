@@ -1,0 +1,72 @@
+<!-- layout.ejs -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title><%= typeof title !== 'undefined' ? title : 'Dashboard - Royal Transports' %></title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+ <link href="/css/layout.css" rel="stylesheet">
+</head>
+<body>
+  <!-- Modal Proyecto -->
+  <div class="modal fade" id="modalProyecto" tabindex="-1" aria-labelledby="modalProyectoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalProyectoLabel">Seleccione tipo de proyecto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body text-center">
+          <button class="btn btn-primary me-2" onclick="guardarSeleccion('conjunto')" data-bs-dismiss="modal">Proyectos en conjunto</button>
+          <button class="btn btn-secondary" onclick="guardarSeleccion('directivos')" data-bs-dismiss="modal">Proyecto de directivos</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <i class="bi bi-house-door-fill" title="Inicio"></i>
+    <i class="bi bi-bar-chart-fill" title="Gráficas"></i>
+    <i class="bi bi-people-fill" title="Usuarios"></i>
+    <i class="bi bi-envelope-fill" title="Mensajes"></i>
+    <i class="bi bi-calendar-event-fill" title="Calendario"></i>
+    <!-- Planeaciones Dropdown -->
+    <div class="dropdown">
+      <i class="bi bi-journal-text dropdown-toggle" title="Planeaciones" data-bs-toggle="dropdown" aria-expanded="false"></i>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="#" onclick="abrirModalProyecto()">Proyectos</a></li>
+        <li><a class="dropdown-item" href="/planeaciones/tareas">Tareas</a></li>
+        <li><a class="dropdown-item" href="/planeaciones/actividades">Actividades</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div>
+      <h5 class="m-0">Royal Transports</h5>
+    </div>
+    <div class="d-flex align-items-center">
+      <span class="me-3"><%= usuario || 'usuario' %></span>
+      <i class="bi bi-person-circle fs-4"></i>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <main class="content">
+    <p id="seleccionProyecto" class="text-muted"></p>
+    <%- body %>
+  </main>
+  
+    <script src="/js/proyecto.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</body>
+</html>

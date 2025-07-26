@@ -1,0 +1,62 @@
+<!-- proyectos.ejs -->
+
+<h4 class="mb-4">Catálogo de Proyectos</h4>
+<div id="seleccionProyecto" class="mb-3 text-muted fw-semibold"></div>
+
+<div class="table-container">
+  <button class="btn btn-primary mb-3" onclick="agregarFila()">Agregar Proyecto</button>
+
+  <table class="table table-striped">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>Nombre del Proyecto</th>
+        <th>Descripción</th>
+        <th>Tipo Proyecto</th>
+        <th>Departamento(s)</th>
+        <th>Integrante(s)</th>
+        <th>Fecha Inicio</th>
+        <th>Fecha Fin</th>
+        <th>Estatus</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="cuerpoTablaProyectos">
+      <% if (proyectos && proyectos.length > 0) { %>
+        <% proyectos.forEach(function(proy) { %>
+          <tr>
+            <td><%= proy.id %></td>
+            <td><%= proy.nombre %></td>
+            <td><%= proy.descripcion %></td>
+            <td><%= proy.tipo_proyecto %></td>
+            <td><%= proy.departamento %></td>
+            <td><%= proy.integrante || '-' %></td>
+            <td><%= proy.fecha_inicio ? proy.fecha_inicio.toISOString().split('T')[0] : '' %></td>
+            <td><%= proy.fecha_fin ? proy.fecha_fin.toISOString().split('T')[0] : '' %></td>
+            <td><%= proy.estatus %></td>
+            <td>—</td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="10" class="text-center">No hay proyectos registrados.</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<!-- Definimos la lista de integrantes como variable global JS -->
+<script>
+  const integrantes = <%- JSON.stringify(integrantes || []) %>;
+  console.log("Integrantes disponibles:", integrantes); // Para depurar
+</script>
+
+
+<datalist id="listaIntegrantes">
+  <% integrantes.forEach(p => { %>
+    <option value="<%= p.nombre_sin_apellidos %> <%= p.apellido_paterno %> <%= p.apellido_materno %>">
+  <% }) %>
+</datalist>
+<!-- Cargamos el script con lógica de agregar filas -->
+<script src="/js/proyecto.js"></script>
