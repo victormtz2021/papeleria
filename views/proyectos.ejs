@@ -58,5 +58,11 @@
     <option value="<%= p.nombre_sin_apellidos %> <%= p.apellido_paterno %> <%= p.apellido_materno %>">
   <% }) %>
 </datalist>
+
+<datalist id="listaAreas">
+  <% (areas || []).forEach(d => { %>
+    <option value="<%= d.nombre %>">
+  <% }) %>
+</datalist>
 <!-- Cargamos el script con lógica de agregar filas -->
 <script src="/js/proyecto.js"></script>

@@ -1,20 +1,26 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const sql = require('mssql');
-const dbConfig = require('../db/config');
-const { getPersonal } = require('../db/royalDb'); // 💡 nuevo: conecta a royaldb2024
+const sql = require("mssql");
+const dbConfig = require("../db/config");
+const { getPersonal, getAreas } = require('../db/royalDb');
+
+
 
 // Ruta única y correcta
+
 router.get('/proyectos', async (req, res) => {
   try {
     const pool = await sql.connect(dbConfig);
     const result = await pool.request().query('SELECT * FROM Proyectos');
-    const integrantes = await getPersonal(); // trae datos de otra base
+
+    const integrantes = await getPersonal();
+    const areas = await getAreas(); // <- nuevo nombre
 
     res.render('proyectos', {
       title: 'Catálogo de Proyectos',
       proyectos: result.recordset,
-      integrantes, // 🔑 Se pasa a EJS
+      integrantes,
+      areas // <- pasar a EJS
     });
   } catch (err) {
     console.error('Error al obtener proyectos o integrantes:', err);

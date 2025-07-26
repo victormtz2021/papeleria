@@ -1,7 +1,9 @@
+// db/royalDb.js
 const sql = require("mssql");
+const { get } = require("../routes/planeacionesRoutes");
 
 const royalDbConfig = {
-   user: 'sa',
+  user: 'sa',
   password: 'lis.2010',
   server: '10.0.0.12',
   database: 'royaldb2024',
@@ -21,9 +23,24 @@ async function getPersonal() {
     await pool.close();
     return result.recordset;
   } catch (err) {
-    console.error("❌ Error consultando royaldb2024:", err);
+    console.error("❌ Error consultando personal:", err);
     return [];
   }
 }
 
-module.exports = { getPersonal };
+async function getAreas() {
+  try {
+    const pool = await new sql.ConnectionPool(royalDbConfig).connect();
+    const result = await pool.request().query(`
+      SELECT descripcion AS nombre
+      FROM dbo.general_departamentos
+      WHERE almacen = 'n'
+    `);
+    await pool.close();
+    return result.recordset;
+  } catch (err) {
+    console.error("❌ Error consultando áreas:", err);
+    return [];
+  }
+}
+module.exports = { getPersonal, getAreas };
