@@ -1,3 +1,18 @@
+// Esperar que el documento esté listo
+document.addEventListener("DOMContentLoaded", function () {
+  // Inicializa DataTable si existe la tabla
+  if ($("#tablaProyectos").length) {
+    $("#tablaProyectos").DataTable({
+      language: {
+        url: "/datatables/es-ES.json",
+      },
+      pageLength: 5,
+      scrollX: true,
+      responsive: true,
+    });
+  }
+});
+
 // ====================
 // Modal selección tipo de proyecto
 // ====================
@@ -44,7 +59,7 @@ function agregarFila() {
     </td>
      <td>
           <div>
-            <input type="text" class="form-control mb-1" placeholder="Escribe un departamento">
+            <input type="text" class="form-control mb-1" placeholder="Escribe un departamento" required >
             <button type="button" class="btn btn-sm btn-secondary mt-1" onclick="agregarDepartamento(this)">Agregar</button>
             <ul class="mt-1 small text-muted" style="list-style-type: disc; padding-left: 1rem;"></ul>
             <input type="hidden" name="departamento" value="">
@@ -52,7 +67,7 @@ function agregarFila() {
       </td>
     <td>
       <div>
-        <input type="text" class="form-control mb-1" placeholder="Escribe o selecciona área" list="listaAreas">
+        <input type="text" class="form-control mb-1" placeholder="Escribe o selecciona área" list="listaAreas" required >
         <button type="button" class="btn btn-sm btn-secondary mt-1" onclick="agregarArea(this)">Agregar</button>
         <ul class="mt-1 small text-muted" style="list-style-type: disc; padding-left: 1rem;"></ul>
         <input type="hidden" name="area" value="">
@@ -60,7 +75,7 @@ function agregarFila() {
     </td>
     <td>
       <div>
-        <input type="text" class="form-control mb-1" placeholder="Escribe y selecciona" list="listaIntegrantes">
+        <input type="text" class="form-control mb-1" placeholder="Escribe y selecciona" list="listaIntegrantes" required >
         <button type="button" class="btn btn-sm btn-secondary mt-1" onclick="agregarIntegrante(this)">Agregar</button>
         <ul class="mt-1 small" style="list-style-type: disc; padding-left: 1rem;"></ul>
         <input type="hidden" name="integrantes" value="">
@@ -77,10 +92,15 @@ function agregarFila() {
 <td>
   <span class="indicador-badge badge rounded-pill bg-secondary">Sin estado</span>
 </td>
-    <td><button class="btn btn-success btn-sm" onclick="guardarProyecto(this)">Guardar</button></td>
+   <td>
+ <input type="hidden" name="estatus" value="POR ATENDER">
+  <button class="btn btn-success btn-sm" onclick="guardarProyecto(this)">Guardar</button>
+   <button class="btn btn-danger btn-sm cancelar-proyecto">Cancelar</button>
+</td>
   `;
 
-  tbody.appendChild(fila);
+tbody.insertBefore(fila, tbody.firstChild); // 🔝 Esto la agrega al principio
+
 
   const slider = fila.querySelector(".porcentaje-slider");
   const texto = fila.querySelector(".porcentaje-texto");
@@ -91,22 +111,34 @@ function agregarFila() {
     texto.textContent = val + "%";
 
     // Cambia color del badge según el porcentaje
+    const hiddenStatus = fila.querySelector('input[name="estatus"]');
+
     if (val === 100) {
       badge.textContent = "COMPLETO";
       badge.className = "indicador-badge badge rounded-pill bg-success";
+      hiddenStatus.value = "COMPLETO";
     } else if (val >= 50) {
       badge.textContent = "ATENDIÉNDOSE";
       badge.className =
         "indicador-badge badge rounded-pill bg-warning text-dark";
+      hiddenStatus.value = "ATENDIÉNDOSE";
     } else if (val === 0) {
       badge.textContent = "POR ATENDER";
       badge.className = "indicador-badge badge rounded-pill bg-secondary";
+      hiddenStatus.value = "POR ATENDER";
     } else {
       badge.textContent = "PLANEACIÓN";
       badge.className = "indicador-badge badge rounded-pill bg-primary";
+      hiddenStatus.value = "PLANEACIÓN";
     }
   });
 }
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("cancelar-proyecto")) {
+    const fila = e.target.closest("tr");
+    fila.remove();
+  }
+});
 
 // ====================
 // Manejador de integrantes múltiples
@@ -229,6 +261,48 @@ function actualizarCampoOculto(lista, hidden) {
 }
 
 // ====================
+
+function validarFormularioProyecto() {
+  const nombre = document.querySelector('input[name="nombre"]').value.trim();
+  const tipo = document.querySelector('select[name="tipo_proyecto"]').value;
+  const inicio = document.querySelector('input[name="fecha_inicio"]').value;
+  const fin = document.querySelector('input[name="fecha_fin"]').value;
+  const porcentaje = document.querySelector('input[name="porcentaje"]').value;
+
+  if (!nombre || !tipo || !inicio || !fin || !porcentaje) {
+    Swal.fire(
+      "Error",
+      "Todos los campos obligatorios deben estar llenos",
+      "warning"
+    );
+    return false;
+  }
+
+  if (isNaN(porcentaje) || porcentaje < 0 || porcentaje > 100) {
+    Swal.fire(
+      "Error",
+      "El porcentaje debe ser un número entre 0 y 100",
+      "warning"
+    );
+    return false;
+  }
+
+  const inicioDate = new Date(inicio);
+  const finDate = new Date(fin);
+
+  if (inicioDate > finDate) {
+    Swal.fire(
+      "Error",
+      "La fecha de inicio no puede ser mayor que la fecha de fin",
+      "warning"
+    );
+    return false;
+  }
+
+  return true;
+}
+///////////////////////////////////////
+
 // Envío de proyecto al backend
 // ====================
 async function guardarProyecto(boton) {
@@ -240,15 +314,46 @@ async function guardarProyecto(boton) {
     data[input.name] = input.value;
   });
 
-  // ✅ Aquí colocas la validación del porcentaje
+  // ✅ Asegurarse de que porcentaje sea número entero
+  data.porcentaje = parseInt(data.porcentaje) || 0;
+
+  // ✅ Validación personalizada por campo
+  const errores = [];
+
+  if (!data.nombre?.trim()) errores.push("nombre del proyecto");
+  if (!data.descripcion?.trim()) errores.push("descripción");
+  if (!data.tipo_proyecto) errores.push("tipo de proyecto");
+  if (!data.departamento?.trim()) errores.push("departamento(s)");
+  if (!data.area?.trim()) errores.push("área(s)");
+  if (!data.integrantes?.trim()) errores.push("integrante(s)");
+  if (!data.fecha_inicio) errores.push("fecha de inicio");
+  if (!data.fecha_fin) errores.push("fecha de fin");
+
   if (
-    "porcentaje" in data &&
-    (isNaN(data.porcentaje) || data.porcentaje < 0 || data.porcentaje > 100)
+    data.fecha_inicio &&
+    data.fecha_fin &&
+    new Date(data.fecha_inicio) > new Date(data.fecha_fin)
   ) {
-    alert("⚠️ El porcentaje debe ser un número entre 0 y 100.");
+    errores.push("la fecha de inicio no puede ser mayor que la fecha de fin");
+  }
+
+  if (isNaN(data.porcentaje) || data.porcentaje < 0 || data.porcentaje > 100) {
+    errores.push("porcentaje válido entre 0 y 100");
+  }
+
+  if (errores.length > 0) {
+    Swal.fire({
+      icon: "warning",
+      title: "Faltan datos",
+      html:
+        "<ul style='text-align: left;'>" +
+        errores.map((e) => `<li>${e}</li>`).join("") +
+        "</ul>",
+    });
     return;
   }
 
+  // ✅ Envío si todo es válido
   try {
     const resp = await fetch("/planeaciones/proyectos/agregar", {
       method: "POST",
@@ -257,12 +362,28 @@ async function guardarProyecto(boton) {
     });
 
     if (resp.ok) {
-      location.reload();
+      const resultado = await resp.json();
+      Swal.fire({
+        icon: "success",
+        title: "¡Proyecto registrado!",
+        text: resultado.nombre
+          ? `El proyecto "${resultado.nombre}" fue guardado correctamente.`
+          : "Proyecto guardado correctamente.",
+        timer: 2000,
+        showConfirmButton: false,
+      }).then(() => location.reload());
     } else {
-      alert("Error al guardar el proyecto.");
+      const error = await resp
+        .json()
+        .catch(() => ({ error: "Error desconocido" }));
+      Swal.fire(
+        "Error",
+        error.error || "Error al guardar el proyecto",
+        "error"
+      );
     }
   } catch (err) {
     console.error("Error:", err);
-    alert("Error al enviar el proyecto.");
+    Swal.fire("Error", "Error de red al enviar el proyecto.", "error");
   }
 }

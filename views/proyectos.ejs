@@ -8,57 +8,59 @@
     Agregar Proyecto
   </button>
 
-  <table class="table table-striped">
-    <thead class="table-dark">
-      <tr>
-        <th class="col-1">ID</th>
-        <th class="col-2">Nombre del Proyecto</th>
-        <th class="col-2">Descripción</th>
-        <th class="col-2">Tipo</th>
-        <th class="col-2">Departamento(s)</th>
-        <th class="col-2">Área(s)</th>
-        <th class="col-2">Integrante(s)</th>
-        <th class="col-1">Inicio</th>
-        <th class="col-1">Fin</th>
-        <th class="col-1">%</th>
-        <th class="col-2">Indicador</th>
-        <th class="col-1">Acciones</th>
-      </tr>
-    </thead>
-    <tbody id="cuerpoTablaProyectos">
-      <% if (proyectos && proyectos.length > 0) { %> <%
-      proyectos.forEach(function(proy) { %>
-      <tr>
-        <td><%= proy.id %></td>
-        <td><%= proy.nombre %></td>
-        <td><%= proy.descripcion %></td>
-        <td><%= proy.tipo_proyecto %></td>
-        <td><%= proy.area %></td>
-        <td><%= proy.departamento %></td>
-        <td><%= proy.integrante || '-' %></td>
-        <td>
-          <%= proy.fecha_inicio ? proy.fecha_inicio.toISOString().split('T')[0]
-          : '' %>
-        </td>
-        <td>
-          <%= proy.fecha_fin ? proy.fecha_fin.toISOString().split('T')[0] : ''
-          %>
-        </td>
-        <td><%= proy.porcentaje %></td>
-        <td><%= proy.estatus %></td>
-        <td>—</td>
-      </tr>
-      <% }) %> <% } else { %>
-      <tr>
-        <td colspan="12" class="text-center">No hay proyectos registrados.</td>
-      </tr>
-      <% } %>
-    </tbody>
-  </table>
+  <div class="table-responsive">
+    <table
+      id="tablaProyectos"
+      class="table table-striped table-hover table-bordered"
+      style="width: 100%"
+    >
+      <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>Proyecto</th>
+          <th>Descripción</th>
+          <th>Tipo</th>
+          <th>Departamento(s)</th>
+          <th>Área(s)</th>
+          <th>Integrante(s)</th>
+          <th>Inicio</th>
+          <th>Fin</th>
+          <th>%</th>
+          <th>Indicador</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="cuerpoTablaProyectos">
+        <% proyectos.forEach((p, index) => { %>
+        <tr
+          data-bs-toggle="collapse"
+          data-bs-target="#detalle<%= index %>"
+          style="cursor: pointer"
+        >
+          <td><%= p.id %></td>
+          <td><%= p.nombre %></td>
+          <td><%= p.descripcion %></td>
+          <td><%= p.tipo_proyecto %></td>
+          <td><%= p.departamento %></td>
+          <td><%= p.area %></td>
+          <td><%= p.integrantes %></td>
+          <td><%= p.fecha_inicio.toISOString().split('T')[0] %></td>
+          <td><%= p.fecha_fin.toISOString().split('T')[0] %></td>
+          <td><%= p.porcentaje %> %</td>
+          <td><%= p.estatus %></td>
+          <td>—</td>
+        </tr>
+
+       
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
 </div>
 
 <!-- Definimos la lista de integrantes como variable global JS -->
 <script>
+
   const integrantes = <%- JSON.stringify(integrantes || []) %>;
   console.log("Integrantes disponibles:", integrantes); // Para depurar
 </script>
@@ -78,4 +80,4 @@
 </datalist>
 
 <!-- Cargamos el script con lógica de agregar filas -->
-<script src="/js/proyecto.js"></script>
+<!--<script src="/js/proyecto.js"></script>-->

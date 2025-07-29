@@ -5,7 +5,8 @@ const dbConfig = require("../db/config");
 const { getPersonal, getAreas } = require('../db/royalDb');
 
 
-
+// 👇 Importa el controlador de proyectos
+const { guardarProyecto } = require("../controllers/proyectosController");
 // Ruta única y correcta
 
 router.get('/proyectos', async (req, res) => {
@@ -27,6 +28,9 @@ router.get('/proyectos', async (req, res) => {
     res.status(500).send('Error al cargar proyectos');
   }
 });
+
+// ✅ Ruta para guardar proyecto desde el frontend
+router.post("/proyectos/agregar", guardarProyecto);
 
 // Otras rutas siguen igual
 router.get("/tareas", (req, res) => {

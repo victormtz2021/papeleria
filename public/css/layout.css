@@ -43,3 +43,9 @@
     .porcentaje-slider {
   width: 100px;
 }
+
+#tablaProyectos td,
+#tablaProyectos th {
+  text-align: center;
+  vertical-align: middle;
+}
