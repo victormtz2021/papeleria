@@ -48,10 +48,17 @@
           <td><%= p.fecha_fin.toISOString().split('T')[0] %></td>
           <td><%= p.porcentaje %> %</td>
           <td><%= p.estatus %></td>
-          <td>—</td>
+          <td>
+            <button
+              class="btn btn-sm btn-outline-warning"
+              onclick="editarProyecto(this)"
+              title="Editar"
+            >
+              <i class="bi bi-pencil-square"></i>
+            </button>
+          </td>
         </tr>
 
-       
         <% }) %>
       </tbody>
     </table>
@@ -79,5 +86,10 @@
   <option value="<%= d.nombre %>"><% }) %></option>
 </datalist>
 
+<datalist id="listaDepartamentos">
+  <option value="Sistemas">
+  <option value="Compras">
+  <!-- Agrega más aquí si los tienes -->
+</datalist>
 <!-- Cargamos el script con lógica de agregar filas -->
 <!--<script src="/js/proyecto.js"></script>-->

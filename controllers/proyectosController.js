@@ -1,14 +1,21 @@
-const { getPersonal } = require("../db/royalDb");
+// controllers/proyectosController.js
 const sql = require("mssql");
 const dbConfig = require("../db/config");
+const { getPersonal, getAreas } = require("../db/royalDb");
 
 const mostrarProyectos = async (req, res) => {
   try {
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request().query("SELECT * FROM Proyectos");
+
     const integrantes = await getPersonal();
+    const areas = await getAreas();
 
     res.render("proyectos", {
-      title: "Catálogo Proyectos",
+      title: "Catálogo de Proyectos",
+      proyectos: result.recordset,
       integrantes,
+      areas,
     });
   } catch (error) {
     console.error("Error cargando proyectos:", error);
@@ -31,59 +38,91 @@ const guardarProyecto = async (req, res) => {
   } = req.body;
 
   try {
+    if (new Date(fecha_fin) < new Date(fecha_inicio)) {
+      return res.status(400).json({ error: "La fecha de fin no puede ser menor que la fecha de inicio." });
+    }
+
     const pool = await sql.connect(dbConfig);
+    await pool.request()
+      .input("nombre", sql.NVarChar, nombre)
+      .input("descripcion", sql.NVarChar, descripcion)
+      .input("tipo_proyecto", sql.VarChar, tipo_proyecto)
+      .input("departamento", sql.NVarChar, departamento)
+      .input("area", sql.NVarChar, area)
+      .input("integrantes", sql.NVarChar, integrantes)
+      .input("fecha_inicio", sql.Date, fecha_inicio)
+      .input("fecha_fin", sql.Date, fecha_fin)
+      .input("porcentaje", sql.Int, porcentaje)
+      .input("estatus", sql.VarChar, estatus)
+      .query(`INSERT INTO Proyectos
+              (nombre, descripcion, tipo_proyecto, departamento, area, integrantes, fecha_inicio, fecha_fin, porcentaje, estatus, fecha_creacion)
+              VALUES (@nombre, @descripcion, @tipo_proyecto, @departamento, @area, @integrantes, @fecha_inicio, @fecha_fin, @porcentaje, @estatus, GETDATE())`);
 
-    if (
-      !nombre ||
-      !tipo_proyecto ||
-      !fecha_inicio ||
-      !fecha_fin ||
-      isNaN(porcentaje)
-    ) {
-      return res.status(400).send("Campos obligatorios inválidos");
+    res.json({ nombre });
+  } catch (error) {
+    console.error("Error guardando proyecto:", error);
+    res.status(500).json({ error: "Error interno al guardar proyecto" });
+  }
+};
+
+const editarProyecto = async (req, res) => {
+  const {
+    id,
+    nombre,
+    descripcion,
+    tipo_proyecto,
+    departamento,
+    area,
+    integrantes,
+    fecha_fin,
+    porcentaje,
+    estatus,
+  } = req.body;
+
+  try {
+    // Obtener la fecha_inicio desde la base de datos para validación
+    const pool = await sql.connect(dbConfig);
+    const consulta = await pool.request()
+      .input("id", sql.Int, id)
+      .query("SELECT fecha_inicio FROM Proyectos WHERE id = @id");
+
+    const fechaInicioBD = consulta.recordset[0]?.fecha_inicio;
+    if (fechaInicioBD && new Date(fecha_fin) < new Date(fechaInicioBD)) {
+      return res.status(400).json({ error: "La fecha de fin no puede ser menor que la fecha de inicio." });
     }
 
-    if (Number(porcentaje) < 0 || Number(porcentaje) > 100) {
-      return res.status(400).send("El porcentaje debe estar entre 0 y 100");
-    }
+    await pool.request()
+      .input("id", sql.Int, id)
+      .input("nombre", sql.NVarChar, nombre)
+      .input("descripcion", sql.NVarChar, descripcion)
+      .input("tipo_proyecto", sql.VarChar, tipo_proyecto)
+      .input("departamento", sql.NVarChar, departamento)
+      .input("area", sql.NVarChar, area)
+      .input("integrantes", sql.NVarChar, integrantes)
+      .input("fecha_fin", sql.Date, fecha_fin)
+      .input("porcentaje", sql.Int, porcentaje)
+      .input("estatus", sql.VarChar, estatus)
+      .query(`UPDATE Proyectos SET
+                nombre = @nombre,
+                descripcion = @descripcion,
+                tipo_proyecto = @tipo_proyecto,
+                departamento = @departamento,
+                area = @area,
+                integrantes = @integrantes,
+                fecha_fin = @fecha_fin,
+                porcentaje = @porcentaje,
+                estatus = @estatus
+              WHERE id = @id`);
 
-    const inicioDate = new Date(fecha_inicio);
-    const finDate = new Date(fecha_fin);
-    if (inicioDate > finDate) {
-      return res.status(400).send("Fecha de inicio mayor que fecha de fin");
-    }
-
-    await pool
-      .request()
-      .input("nombre", sql.NVarChar(150), nombre)
-      .input("descripcion", sql.NVarChar(sql.MAX), descripcion)
-      .input("tipo_proyecto", sql.VarChar(20), tipo_proyecto)
-      .input("departamento", sql.NVarChar(100), departamento)
-      .input("area", sql.NVarChar(sql.MAX), area)
-      .input("integrantes", sql.NVarChar(sql.MAX), integrantes)
-      .input("fecha_inicio", sql.Date, fecha_inicio || null)
-      .input("fecha_fin", sql.Date, fecha_fin || null)
-      .input("porcentaje", sql.Int, porcentaje || 0)
-      .input("estatus", sql.VarChar(20), estatus) // Asegura que el campo sea "estatus"
-      .query(`
-        INSERT INTO Proyectos (
-          nombre, descripcion, tipo_proyecto, departamento,
-          area, integrantes, fecha_inicio, fecha_fin, porcentaje, estatus
-        )
-        VALUES (
-          @nombre, @descripcion, @tipo_proyecto, @departamento,
-          @area, @integrantes, @fecha_inicio, @fecha_fin, @porcentaje, @estatus
-        )
-      `);
-
-    res.status(200).json({ mensaje: "Proyecto guardado correctamente", nombre });
-  } catch (err) {
-    console.error("❌ Error al guardar proyecto:", err);
-    res.status(500).json({ error: "Error al guardar el proyecto" });
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error actualizando proyecto:", error);
+    res.status(500).json({ error: "Error interno al actualizar proyecto" });
   }
 };
 
 module.exports = {
   mostrarProyectos,
   guardarProyecto,
+  editarProyecto,
 };

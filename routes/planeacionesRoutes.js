@@ -6,7 +6,7 @@ const { getPersonal, getAreas } = require('../db/royalDb');
 
 
 // 👇 Importa el controlador de proyectos
-const { guardarProyecto } = require("../controllers/proyectosController");
+const { guardarProyecto,editarProyecto} = require("../controllers/proyectosController");
 // Ruta única y correcta
 
 router.get('/proyectos', async (req, res) => {
@@ -31,6 +31,10 @@ router.get('/proyectos', async (req, res) => {
 
 // ✅ Ruta para guardar proyecto desde el frontend
 router.post("/proyectos/agregar", guardarProyecto);
+
+// ✅ Ruta para editar proyecto desde el frontend
+router.put("/proyectos/editar", editarProyecto);
+
 
 // Otras rutas siguen igual
 router.get("/tareas", (req, res) => {
