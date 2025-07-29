@@ -4,43 +4,54 @@
 <div id="seleccionProyecto" class="mb-3 text-muted fw-semibold"></div>
 
 <div class="table-container">
-  <button class="btn btn-primary mb-3" onclick="agregarFila()">Agregar Proyecto</button>
+  <button class="btn btn-primary mb-3" onclick="agregarFila()">
+    Agregar Proyecto
+  </button>
 
   <table class="table table-striped">
     <thead class="table-dark">
       <tr>
-        <th>ID</th>
-        <th>Nombre del Proyecto</th>
-        <th>Descripción</th>
-        <th>Tipo Proyecto</th>
-        <th>Departamento(s)</th>
-        <th>Integrante(s)</th>
-        <th>Fecha Inicio</th>
-        <th>Fecha Fin</th>
-        <th>Estatus</th>
-        <th>Acciones</th>
+        <th class="col-1">ID</th>
+        <th class="col-2">Nombre del Proyecto</th>
+        <th class="col-2">Descripción</th>
+        <th class="col-2">Tipo</th>
+        <th class="col-2">Departamento(s)</th>
+        <th class="col-2">Área(s)</th>
+        <th class="col-2">Integrante(s)</th>
+        <th class="col-1">Inicio</th>
+        <th class="col-1">Fin</th>
+        <th class="col-1">%</th>
+        <th class="col-2">Indicador</th>
+        <th class="col-1">Acciones</th>
       </tr>
     </thead>
     <tbody id="cuerpoTablaProyectos">
-      <% if (proyectos && proyectos.length > 0) { %>
-        <% proyectos.forEach(function(proy) { %>
-          <tr>
-            <td><%= proy.id %></td>
-            <td><%= proy.nombre %></td>
-            <td><%= proy.descripcion %></td>
-            <td><%= proy.tipo_proyecto %></td>
-            <td><%= proy.departamento %></td>
-            <td><%= proy.integrante || '-' %></td>
-            <td><%= proy.fecha_inicio ? proy.fecha_inicio.toISOString().split('T')[0] : '' %></td>
-            <td><%= proy.fecha_fin ? proy.fecha_fin.toISOString().split('T')[0] : '' %></td>
-            <td><%= proy.estatus %></td>
-            <td>—</td>
-          </tr>
-        <% }) %>
-      <% } else { %>
-        <tr>
-          <td colspan="10" class="text-center">No hay proyectos registrados.</td>
-        </tr>
+      <% if (proyectos && proyectos.length > 0) { %> <%
+      proyectos.forEach(function(proy) { %>
+      <tr>
+        <td><%= proy.id %></td>
+        <td><%= proy.nombre %></td>
+        <td><%= proy.descripcion %></td>
+        <td><%= proy.tipo_proyecto %></td>
+        <td><%= proy.area %></td>
+        <td><%= proy.departamento %></td>
+        <td><%= proy.integrante || '-' %></td>
+        <td>
+          <%= proy.fecha_inicio ? proy.fecha_inicio.toISOString().split('T')[0]
+          : '' %>
+        </td>
+        <td>
+          <%= proy.fecha_fin ? proy.fecha_fin.toISOString().split('T')[0] : ''
+          %>
+        </td>
+        <td><%= proy.porcentaje %></td>
+        <td><%= proy.estatus %></td>
+        <td>—</td>
+      </tr>
+      <% }) %> <% } else { %>
+      <tr>
+        <td colspan="12" class="text-center">No hay proyectos registrados.</td>
+      </tr>
       <% } %>
     </tbody>
   </table>
@@ -52,17 +63,19 @@
   console.log("Integrantes disponibles:", integrantes); // Para depurar
 </script>
 
-
 <datalist id="listaIntegrantes">
   <% integrantes.forEach(p => { %>
-    <option value="<%= p.nombre_sin_apellidos %> <%= p.apellido_paterno %> <%= p.apellido_materno %>">
-  <% }) %>
+  <option
+    value="<%= p.nombre_sin_apellidos %> <%= p.apellido_paterno %> <%= p.apellido_materno %>"
+  >
+    <% }) %>
+  </option>
 </datalist>
 
 <datalist id="listaAreas">
   <% (areas || []).forEach(d => { %>
-    <option value="<%= d.nombre %>">
-  <% }) %>
+  <option value="<%= d.nombre %>"><% }) %></option>
 </datalist>
+
 <!-- Cargamos el script con lógica de agregar filas -->
 <script src="/js/proyecto.js"></script>
