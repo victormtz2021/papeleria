@@ -1,5 +1,6 @@
 // Esperar que el documento esté listo
 document.addEventListener("DOMContentLoaded", function () {
+  //cargarSelectRamasDesdeBD(); // 👈 importante para llenar el select
   // Inicializa DataTable si existe la tabla
   if ($("#tablaProyectos").length) {
     $("#tablaProyectos").DataTable({
@@ -768,7 +769,9 @@ function restaurarProyecto(id) {
           Swal.fire("Restaurado", "El proyecto fue reactivado", "success");
 
           // 🔄 Elimina la fila del modal
-          const filaRestaurada = document.querySelector(`#tbodyEliminados tr[data-id="${id}"]`);
+          const filaRestaurada = document.querySelector(
+            `#tbodyEliminados tr[data-id="${id}"]`
+          );
           if (filaRestaurada) filaRestaurada.remove();
 
           // 🔼 Agrega la fila al inicio de la tabla principal
@@ -799,10 +802,384 @@ function restaurarProyecto(id) {
           tbody.insertBefore(nuevaFila, tbody.firstChild);
 
           // 🔒 Cierra el modal
-          const modal = bootstrap.Modal.getInstance(document.getElementById("modalProyectosEliminados"));
+          const modal = bootstrap.Modal.getInstance(
+            document.getElementById("modalProyectosEliminados")
+          );
           modal.hide();
         })
         .catch(() => Swal.fire("Error", "No se pudo restaurar", "error"));
     }
   });
+}
+
+///////////////MUESTRA GRAFICA DIRECCIONES//////////////
+function mostrarGraficaRamas() {
+  fetch("/planeaciones/proyectos/ramas")
+    .then((res) => res.json())
+    .then((data) => {
+      if (!Array.isArray(data)) {
+        throw new Error("Los datos recibidos no son válidos.");
+      }
+
+      const ctx = document.getElementById("graficaRamas").getContext("2d");
+
+      if (window.graficaRamas instanceof Chart) {
+        window.graficaRamas.destroy();
+      }
+      window.graficaRamas = new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: data.map((d) => d.rama),
+          datasets: [
+            {
+              label: "Proyectos por rama",
+              data: data.map((d) => d.total),
+              backgroundColor: [
+                "#007bff",
+                "#28a745",
+                "#ffc107",
+                "#dc3545",
+                "#6f42c1",
+                "#17a2b8",
+              ],
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+        },
+      });
+
+      new bootstrap.Modal(document.getElementById("modalGraficaRamas")).show();
+    })
+    .catch((err) => {
+      console.error("Error al mostrar gráfica:", err);
+      Swal.fire("Error", "No se pudo cargar la gráfica de ramas.", "error");
+    });
+}
+
+//////////////////////////////////////////////
+///////////////////CODGIO BARRA PARA MOSTRAR INDICADORES C//////////////////
+async function mostrarGraficaIndicadores() {
+  const res = await fetch("/planeaciones/proyectos/ramas-indicadores");
+  const data = await res.json();
+
+  const ramas = [...new Set(data.map((d) => d.rama))];
+  const estatuses = [...new Set(data.map((d) => d.estatus))];
+
+  const datasets = estatuses.map((estatus) => {
+    return {
+      label: estatus,
+      data: ramas.map((rama) => {
+        const registro = data.find(
+          (d) => d.rama === rama && d.estatus === estatus
+        );
+        return registro ? registro.total : 0;
+      }),
+      stack: "proyectos",
+    };
+  });
+
+  // Colores
+  const colores = ["#6c757d", "#0d6efd", "#ffc107", "#fd7e14", "#198754"];
+  datasets.forEach((d, i) => (d.backgroundColor = colores[i % colores.length]));
+
+  const ctx = document.getElementById("graficaIndicadores").getContext("2d");
+
+  // Destruye anterior si existe
+  if (window.graficaIndicadores instanceof Chart) {
+    window.graficaIndicadores.destroy();
+  }
+
+  window.graficaIndicadores = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ramas,
+      datasets,
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              const integrante = context.label;
+              const rama = context.dataset.label;
+              const match = data.find(
+                (d) => d.integrante === integrante && d.rama === rama
+              );
+              const proyectos = match?.proyectos || "Ninguno";
+
+              return `${rama}: ${context.raw} proyectos\n${proyectos}`;
+            },
+          },
+        },
+        legend: { position: "top" },
+      },
+      scales: {
+        x: { stacked: true },
+        y: { stacked: true, beginAtZero: true },
+      },
+    },
+  });
+
+  // Mostrar modal
+  new bootstrap.Modal(
+    document.getElementById("modalGraficaIndicadores")
+  ).show();
+}
+
+//GRAFICA PARA MOSTRAR  INTEGRAS CON SUS PROYECTOS
+async function mostrarGraficaIntegrantes() {
+  const res = await fetch("/planeaciones/proyectos/integrantes-rama");
+  const data = await res.json();
+
+  const integrantes = [...new Set(data.map((d) => d.integrante))];
+  const ramas = [...new Set(data.map((d) => d.rama))];
+
+  const datasets = ramas.map((rama, i) => ({
+    label: rama,
+    data: integrantes.map((intg) => {
+      const reg = data.find((d) => d.integrante === intg && d.rama === rama);
+      return reg ? reg.total : 0;
+    }),
+    backgroundColor: `hsl(${i * 60}, 70%, 60%)`,
+    stack: "proyectos",
+  }));
+
+  const ctx = document.getElementById("graficaIntegrantes").getContext("2d");
+
+  if (window.graficaIntegrantes instanceof Chart) {
+    window.graficaIntegrantes.destroy();
+  }
+
+  window.graficaIntegrantes = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: integrantes,
+      datasets,
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: "top" },
+        tooltip: { mode: "index", intersect: false },
+      },
+      scales: {
+        x: { stacked: true },
+        y: { stacked: true, beginAtZero: true },
+      },
+    },
+  });
+
+  new bootstrap.Modal(
+    document.getElementById("modalGraficaIntegrantes")
+  ).show();
+}
+////////////////////////////////////////////////////////////
+// === GRAFICAS PDF ===
+
+function abrirModalExportarPDF() {
+  fetch("/planeaciones/proyectos/ramas")
+    .then((res) => res.json())
+    .then((data) => {
+      const ctx = document
+        .getElementById("graficaRamasExport")
+        .getContext("2d");
+
+      if (window.graficaRamasExport instanceof Chart) {
+        window.graficaRamasExport.destroy();
+      }
+
+      window.graficaRamasExport = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: data.map((d) => d.rama),
+          datasets: [
+            {
+              label: "Proyectos por rama",
+              data: data.map((d) => d.total),
+              backgroundColor: "rgba(54, 162, 235, 0.7)",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: "Gráfica para PDF",
+            },
+            legend: { display: false },
+          },
+        },
+      });
+
+      // Mostrar modal
+      setTimeout(() => {
+        new bootstrap.Modal(document.getElementById("modalExportarPDF")).show();
+      }, 300);
+    })
+    .catch((err) => {
+      console.error("Error al generar gráfica para PDF:", err);
+      Swal.fire("Error", "No se pudo cargar la gráfica.", "error");
+    });
+}
+
+async function exportarGraficaGeneral() {
+  try {
+    // 1. Cargar datos desde el backend
+    const res = await fetch("/planeaciones/proyectos/ramas");
+    const data = await res.json();
+
+    // 2. Obtener el canvas oculto
+    const canvas = document.getElementById("graficaRamasPDF");
+    const ctx = canvas.getContext("2d");
+
+    // 3. Destruir gráfica previa si existe
+    if (window.chartRamasPDF instanceof Chart) {
+      window.chartRamasPDF.destroy();
+    }
+
+    // 4. Crear gráfica (oculta)
+    window.chartRamasPDF = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: data.map((d) => d.rama),
+        datasets: [
+          {
+            label: "Proyectos por rama",
+            data: data.map((d) => d.total),
+            backgroundColor: "rgba(54, 162, 235, 0.7)",
+          },
+        ],
+      },
+      options: {
+        responsive: false,
+        animation: false,
+        plugins: {
+          title: {
+            display: true,
+            text: "Proyectos por Rama",
+          },
+          legend: {
+            display: false,
+          },
+        },
+      },
+    });
+
+    // 5. Esperar breve tiempo para que se renderice
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // 6. Convertir a imagen y generar PDF
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF();
+    pdf.text("Gráfica General de Proyectos por Rama", 10, 10);
+    pdf.addImage(imgData, "PNG", 10, 20, 180, 100);
+    pdf.save("grafica_general_ramas.pdf");
+  } catch (err) {
+    console.error("Error al exportar PDF:", err);
+    Swal.fire("Error", "No se pudo generar el PDF.", "error");
+  }
+}
+
+async function exportarResumenPorRamaPDF() {
+  try {
+    const res = await fetch("/planeaciones/proyectos/resumen-rama-integrantes");
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      Swal.fire("Aviso", "No hay datos para exportar.", "info");
+      return;
+    }
+
+    const doc = new jsPDF("p", "mm", "letter");
+    let y = 20;
+    let pagina = 1;
+
+    const fechaHoy = new Date().toLocaleDateString("es-MX");
+const piePagina = () => {
+  const alturaPie = 265; // ← Subimos el pie un poco para que no se corte
+
+  // Línea separadora
+  doc.setDrawColor(150);
+  doc.line(10, alturaPie, 200, alturaPie);
+
+  // Texto
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(60, 60, 60);
+
+  doc.text(`Royal Transports | ${fechaHoy}`, 10, alturaPie + 6);
+  doc.text(`Página ${pagina}`, 200, alturaPie + 6, { align: "right" });
+};
+
+const nuevaPagina = () => {
+  piePagina();
+  doc.addPage();
+  pagina++;
+  y = 20;
+};
+
+
+    // Título
+    doc.setFont("courier", "bold");
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Reporte por Dirección: Integrantes y Proyectos", 10, y);
+    y += 10;
+
+    const agrupado = {};
+
+    // Agrupar por rama
+    data.forEach(({ rama, integrante, proyectos }) => {
+      if (!agrupado[rama]) agrupado[rama] = [];
+      agrupado[rama].push({ integrante, proyectos });
+    });
+
+    for (const rama in agrupado) {
+      if (y > 250) nuevaPagina();
+
+      doc.setFont("courier", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(40, 40, 40);
+      doc.text(`Dirección: ${rama}`, 12, y);
+      y += 6;
+
+      agrupado[rama].forEach(({ integrante, proyectos }) => {
+        if (y > 270) nuevaPagina();
+
+        const total = proyectos.length;
+        doc.setFont("courier", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`- ${integrante} (${total} proyecto${total > 1 ? "s" : ""})`, 14, y);
+        y += 5;
+
+        proyectos.forEach((p) => {
+          if (y > 270) nuevaPagina();
+          doc.setFont("courier", "italic");
+          doc.setFontSize(9);
+          doc.setTextColor(80);
+          doc.text(`  • Proyecto: ${p.nombre} | Avance: ${p.porcentaje}% | Indicador: ${p.indicador}`, 18, y);
+          y += 4;
+        });
+
+        y += 2;
+      });
+
+      y += 4;
+    }
+
+    piePagina();
+
+    const fechaArchivo = new Date().toISOString().split("T")[0];
+    doc.save(`reporte_integrantes_rama_${fechaArchivo}.pdf`);
+  } catch (error) {
+    console.error("Error generando el PDF:", error);
+    Swal.fire("Error", "No se pudo generar el PDF de resumen.", "error");
+  }
 }
