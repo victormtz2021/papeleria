@@ -7,6 +7,9 @@
   Agregar Proyecto
 </button>
 
+<button class="btn btn-outline-secondary mb-3" onclick="mostrarProyectosEliminados()">
+  Ver proyectos eliminados
+</button>
 
   <div class="table-responsive">
     <table
@@ -14,23 +17,24 @@
       class="table table-striped table-hover table-bordered"
       style="width: 100%"
     >
-      <thead class="table-dark">
-        <tr>
-          <th>ID</th>
-          <th>Proyecto</th>
-          <th>Rama</th>
-          <th>Descripción</th>
-          <th>Tipo</th>
-          <th>Departamento(s)</th>
-          <th>Área(s)</th>
-          <th>Integrante(s)</th>
-          <th>Inicio</th>
-          <th>Fin</th>
-          <th>%</th>
-          <th>Indicador</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
+<thead class="table-dark">
+  <tr>
+    <th style="min-width: 150px;" class="text-center">ID</th>
+    <th style="min-width:  150px;">Proyecto</th>
+    <th style="min-width:  150px;">Rama</th>
+    <th style="min-width:  150px;">Descripción</th>
+    <th style="min-width:  150px;">Tipo</th>
+    <th style="min-width:  150px;">Departamento(s)</th>
+    <th style="min-width:  150px;">Área(s)</th>
+    <th style="min-width:  150px;">Integrante(s)</th>
+    <th style="min-width:  150px;">Inicio</th>
+    <th style="min-width:  150px;">Fin</th>
+    <th style="min-width: 150px;" class="text-center">%</th>
+    <th style="min-width:  150px;" class="text-center">Indicador</th>
+    <th style="min-width:  150px;" class="text-center">Acciones</th>
+  </tr>
+</thead>
+
       <tbody id="cuerpoTablaProyectos">
         <% proyectos.forEach((p, index) => { %>
         <tr
@@ -54,23 +58,27 @@
 
          
             <td class="text-center">
-  <button
-    class="btn btn-sm btn-outline-secondary me-1"
-  onclick="agregarFila()"
-    title="Agregar Proyecto"
-  >
-    <i class="bi bi-database-fill-gear"></i>
-  </button>
+              <button
+                class="btn btn-sm btn-outline-secondary me-1"
+              onclick="agregarFila()"
+                title="Agregar Proyecto"
+              >
+                <i class="bi bi-database-fill-gear"></i>
+              </button>
 
-  <button
-    class="btn btn-sm btn-outline-warning"
-    onclick="editarProyecto(this)"
-    title="Editar"
-  >
-    <i class="bi bi-pencil-square"></i>
-  </button>
-</td>
-            
+              <button
+                class="btn btn-sm btn-outline-warning"
+                onclick="editarProyecto(this)"
+                title="Editar"
+              >
+                <i class="bi bi-pencil-square"></i>
+              </button>
+              <button class="btn btn-sm btn-danger" onclick="eliminarProyecto(<%= p.id %>)">
+                <i class="bi bi-trash3-fill"></i>
+              </button>
+
+            </td>
+                        
      
         </tr>
 
@@ -122,3 +130,33 @@
     }
   });
 </script>
+
+
+<!-- Modal -->
+<div class="modal fade" id="modalProyectosEliminados" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Proyectos Eliminados</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered table-hover table-sm">
+          <thead class="table-dark">
+            <tr>
+              <th>ID</th>
+              <th>Proyecto</th>
+              <th>Rama</th>
+              <th>Descripción</th>
+              <th>Tipo</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyEliminados">
+            <!-- Aquí se inyectarán los eliminados -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

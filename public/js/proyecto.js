@@ -48,26 +48,26 @@ function agregarFila() {
   const fila = document.createElement("tr");
 
   fila.innerHTML = `
-    <td>—</td>
-    <td><input type="text" class="form-control" name="nombre" placeholder="Proyecto" required></td>
-    <td>
-  <select class="form-select" name="rama" required>
-    <option value="">Seleccione una rama</option>
-    <option value="Dir.Administrativa">Dir.Administrativa</option>
-    <option value="Dir.Operativa">Dir.Operativa</option>
-    <option value="Consejo">Consejo</option>
-  </select>
-</td>
+    <td  class="align-middle">—</td>
+    <td  class="align-middle"><input type="text" class="form-control" name="nombre" placeholder="Proyecto" required></td>
+    <td  class="align-middle">
+      <select class="form-select" name="rama" required>
+        <option value="">Seleccione una rama</option>
+        <option value="Dir.Administrativa">Dir.Administrativa</option>
+        <option value="Dir.Operativa">Dir.Operativa</option>
+        <option value="Consejo">Consejo</option>
+      </select>
+    </td>
 
-    <td><input type="text" class="form-control" name="descripcion" placeholder="Descripción"></td>
-    <td>
+    <td  class="align-middle"><input type="text" class="form-control" name="descripcion" placeholder="Descripción"></td>
+    <td  class="align-middle">
       <select class="form-select" name="tipo_proyecto" required>
         <option value="">Seleccione</option>
         <option value="conjunto">Conjunto</option>
         <option value="directivos">Directivos</option>
       </select>
     </td>
-     <td>
+     <td  class="align-middle">
           <div>
             <input type="text" class="form-control mb-1" placeholder="Escribe un departamento" required >
             <button type="button" class="btn btn-sm btn-secondary mt-1" onclick="agregarDepartamento(this)">Agregar</button>
@@ -75,7 +75,7 @@ function agregarFila() {
             <input type="hidden" name="departamento" value="">
           </div>
       </td>
-    <td>
+    <td  class="align-middle">
       <div>
         <input type="text" class="form-control mb-1" placeholder="Escribe o selecciona área" list="listaAreas" required >
         <button type="button" class="btn btn-sm btn-secondary mt-1" onclick="agregarArea(this)">Agregar</button>
@@ -83,7 +83,7 @@ function agregarFila() {
         <input type="hidden" name="area" value="">
       </div>
     </td>
-    <td>
+    <td  class="align-middle">
       <div>
         <input type="text" class="form-control mb-1" placeholder="Escribe y selecciona" list="listaIntegrantes" required >
         <button type="button" class="btn btn-sm btn-secondary mt-1" onclick="agregarIntegrante(this)">Agregar</button>
@@ -91,15 +91,15 @@ function agregarFila() {
         <input type="hidden" name="integrantes" value="">
       </div>
     </td>
-    <td><input type="date" class="form-control" name="fecha_inicio"></td>
-    <td><input type="date" class="form-control" name="fecha_fin"></td>
-    <td>
+    <td  class="align-middle"><input type="date" class="form-control" name="fecha_inicio"></td>
+    <td  class="align-middle"><input type="date" class="form-control" name="fecha_fin"></td>
+    <td  class="align-middle">
   <div class="d-flex align-items-center gap-2">
     <span class="porcentaje-texto">0%</span>
     <input type="range" class="form-range porcentaje-slider" name="porcentaje" min="0" max="100" step="1" value="0">
   </div>
 </td>
-<td>
+<td  class="align-middle">
   <span class="indicador-badge badge rounded-pill bg-secondary">Sin estado</span>
 </td>
   
@@ -112,8 +112,6 @@ function agregarFila() {
 
 
   `;
-  //<button class="btn btn-success btn-sm" onclick="guardarProyecto(this)">Guardar</button>
-  //<button class="btn btn-danger btn-sm cancelar-proyecto">Cancelar</button>
   tbody.insertBefore(fila, tbody.firstChild); // 🔝 Esto la agrega al principio
 
   const slider = fila.querySelector(".porcentaje-slider");
@@ -327,8 +325,8 @@ async function guardarProyecto(boton) {
   inputs.forEach((input) => {
     data[input.name] = input.value;
   });
-// Aquí agregas manualmente la rama (porque puede estar fuera de inputs o no haber sido detectado)
-data.rama = fila.querySelector('select[name="rama"]').value;
+  // Aquí agregas manualmente la rama (porque puede estar fuera de inputs o no haber sido detectado)
+  data.rama = fila.querySelector('select[name="rama"]').value;
   // ✅ Asegurarse de que porcentaje sea número entero
   data.porcentaje = parseInt(data.porcentaje) || 0;
 
@@ -432,16 +430,30 @@ function editarProyecto(boton) {
   celdas[2].innerHTML = `
     <select class="form-select" name="rama">
       <option value="">Seleccione una rama</option>
-      <option value="Dir.Administrativa" ${JSON.parse(fila.dataset.original).rama === "Dir.Administrativa" ? "selected" : ""}>Dir.Administrativa</option>
-      <option value="Dir.Operativa" ${JSON.parse(fila.dataset.original).rama === "Dir.Operativa" ? "selected" : ""}>Dir.Operativa</option>
-      <option value="Consejo" ${JSON.parse(fila.dataset.original).rama === "Consejo" ? "selected" : ""}>Consejo</option>
+      <option value="Dir.Administrativa" ${
+        JSON.parse(fila.dataset.original).rama === "Dir.Administrativa"
+          ? "selected"
+          : ""
+      }>Dir.Administrativa</option>
+      <option value="Dir.Operativa" ${
+        JSON.parse(fila.dataset.original).rama === "Dir.Operativa"
+          ? "selected"
+          : ""
+      }>Dir.Operativa</option>
+      <option value="Consejo" ${
+        JSON.parse(fila.dataset.original).rama === "Consejo" ? "selected" : ""
+      }>Consejo</option>
     </select>`;
 
   celdas[3].innerHTML = `<input class="form-control" name="descripcion" value="${celdas[3].textContent.trim()}">`;
   celdas[4].innerHTML = `
     <select class="form-select" name="tipo_proyecto">
-      <option value="conjunto" ${celdas[4].textContent.trim() === "conjunto" ? "selected" : ""}>Conjunto</option>
-      <option value="directivos" ${celdas[4].textContent.trim() === "directivos" ? "selected" : ""}>Directivos</option>
+      <option value="conjunto" ${
+        celdas[4].textContent.trim() === "conjunto" ? "selected" : ""
+      }>Conjunto</option>
+      <option value="directivos" ${
+        celdas[4].textContent.trim() === "directivos" ? "selected" : ""
+      }>Directivos</option>
     </select>`;
 
   // Departamento
@@ -471,8 +483,11 @@ function editarProyecto(boton) {
   ["departamento", "area", "integrantes"].forEach((campo, idx) => {
     const celda = celdas[5 + idx];
     const ul = celda.querySelector("ul");
-    const originales = JSON.parse(fila.dataset.original)[campo].split(";").map(x => x.trim()).filter(x => x);
-    originales.forEach(val => {
+    const originales = JSON.parse(fila.dataset.original)
+      [campo].split(";")
+      .map((x) => x.trim())
+      .filter((x) => x);
+    originales.forEach((val) => {
       const li = document.createElement("li");
       li.textContent = val;
       li.style.cursor = "pointer";
@@ -509,7 +524,8 @@ function editarProyecto(boton) {
       badge.className = "indicador-badge badge rounded-pill bg-success";
     } else if (val >= 50) {
       badge.textContent = "ATENDIÉNDOSE";
-      badge.className = "indicador-badge badge rounded-pill bg-warning text-dark";
+      badge.className =
+        "indicador-badge badge rounded-pill bg-warning text-dark";
     } else if (val === 0) {
       badge.textContent = "POR ATENDER";
       badge.className = "indicador-badge badge rounded-pill bg-secondary";
@@ -523,7 +539,6 @@ function editarProyecto(boton) {
     <button class="btn btn-success btn-sm me-1" onclick="guardarEdicion(this)"><i class="bi bi-check-circle"></i></button>
     <button class="btn btn-secondary btn-sm" onclick="cancelarEdicion(this)"><i class="bi bi-x-circle"></i></button>`;
 }
-
 
 function editarAgregarLista(boton, campo) {
   const contenedor = boton.closest("td");
@@ -595,14 +610,17 @@ function guardarEdicion(boton) {
     .then((res) => res.json())
     .then((resp) => {
       if (resp.error) throw new Error(resp.error);
-      Swal.fire("Actualizado", "El proyecto fue editado con éxito", "success").then(() => location.reload());
+      Swal.fire(
+        "Actualizado",
+        "El proyecto fue editado con éxito",
+        "success"
+      ).then(() => location.reload());
     })
     .catch((err) => {
       console.error(err);
       Swal.fire("Error", err.message || "No se pudo actualizar", "error");
     });
 }
-
 
 /////////////////////////////////PROCESO BOTON PARA CANCELAR EDITAR////////////////
 function cancelarEdicion(boton) {
@@ -638,7 +656,7 @@ function cancelarEdicion(boton) {
       <i class="bi bi-pencil-square"></i>
     </button>`;
 }
-
+///////////////////////////////////////////////////////////////
 function cancelarProyecto(boton) {
   Swal.fire({
     title: "¿Cancelar proyecto?",
@@ -658,3 +676,133 @@ function cancelarProyecto(boton) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
+////////////PROCESO PARA ELIMINAR PROYECTO //////////////////
+function eliminarProyecto(id) {
+  Swal.fire({
+    title: "¿Eliminar proyecto?",
+    text: "Esta acción ocultará el proyecto, pero no lo borrará definitivamente.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "Cancelar",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch(`/planeaciones/proyectos/eliminar/${id}`, {
+        method: "PUT",
+      })
+        .then((res) => res.json())
+        .then((resp) => {
+          if (resp.success) {
+            Swal.fire(
+              "Eliminado",
+              "Proyecto ocultado correctamente",
+              "success"
+            ).then(() => location.reload());
+          } else {
+            throw new Error(resp.error || "Error al eliminar");
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          Swal.fire("Error", err.message || "No se pudo eliminar", "error");
+        });
+    }
+  });
+}
+///////////////////////////////////////////////////////////////////////////////
+///////////////////MODAL ELIMINADOS PROYECTOS////////////////////////////////
+function mostrarProyectosEliminados() {
+  fetch("/planeaciones/proyectos/eliminados")
+    .then((res) => res.json())
+    .then((proyectos) => {
+      const tbody = document.getElementById("tbodyEliminados");
+      tbody.innerHTML = "";
+
+      if (proyectos.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center">No hay proyectos eliminados</td></tr>`;
+      }
+
+      proyectos.forEach((p) => {
+        const fila = document.createElement("tr");
+        fila.innerHTML = `
+          <td>${p.id}</td>
+          <td>${p.nombre}</td>
+          <td>${p.rama}</td>
+          <td>${p.descripcion}</td>
+          <td>${p.tipo_proyecto}</td>
+          <td>
+            <button class="btn btn-sm btn-success" onclick="restaurarProyecto(${p.id})">
+              Restaurar
+            </button>
+          </td>`;
+        tbody.appendChild(fila);
+      });
+
+      const modal = new bootstrap.Modal(
+        document.getElementById("modalProyectosEliminados")
+      );
+      modal.show();
+    })
+    .catch((err) => {
+      console.error(err);
+      Swal.fire(
+        "Error",
+        "No se pudieron cargar los proyectos eliminados",
+        "error"
+      );
+    });
+}
+
+// ✅ Aquí colocas la función restaurar:
+function restaurarProyecto(id) {
+  Swal.fire({
+    title: "¿Restaurar proyecto?",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Sí",
+  }).then((r) => {
+    if (r.isConfirmed) {
+      fetch(`/planeaciones/proyectos/restaurar/${id}`, { method: "PUT" })
+        .then((res) => res.json())
+        .then((proyecto) => {
+          Swal.fire("Restaurado", "El proyecto fue reactivado", "success");
+
+          // 🔄 Elimina la fila del modal
+          const filaRestaurada = document.querySelector(`#tbodyEliminados tr[data-id="${id}"]`);
+          if (filaRestaurada) filaRestaurada.remove();
+
+          // 🔼 Agrega la fila al inicio de la tabla principal
+          const tbody = document.getElementById("cuerpoTablaProyectos");
+          const nuevaFila = document.createElement("tr");
+          nuevaFila.innerHTML = `
+            <td>${proyecto.id}</td>
+            <td>${proyecto.nombre}</td>
+            <td>${proyecto.rama}</td>
+            <td>${proyecto.descripcion}</td>
+            <td>${proyecto.tipo_proyecto}</td>
+            <td>${proyecto.departamento}</td>
+            <td>${proyecto.area}</td>
+            <td>${proyecto.integrantes}</td>
+            <td>${proyecto.fecha_inicio.split("T")[0]}</td>
+            <td>${proyecto.fecha_fin.split("T")[0]}</td>
+            <td>${proyecto.porcentaje} %</td>
+            <td>${proyecto.estatus}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-secondary me-1" onclick="agregarFila()" title="Agregar Proyecto">
+                <i class="bi bi-database-fill-gear"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-warning" onclick="editarProyecto(this)" title="Editar">
+                <i class="bi bi-pencil-square"></i>
+              </button>
+            </td>`;
+
+          tbody.insertBefore(nuevaFila, tbody.firstChild);
+
+          // 🔒 Cierra el modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById("modalProyectosEliminados"));
+          modal.hide();
+        })
+        .catch(() => Swal.fire("Error", "No se pudo restaurar", "error"));
+    }
+  });
+}
