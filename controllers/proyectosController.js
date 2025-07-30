@@ -35,15 +35,20 @@ const guardarProyecto = async (req, res) => {
     fecha_fin,
     porcentaje,
     estatus,
+    rama, // 👈 nuevo campo
   } = req.body;
-
   try {
     if (new Date(fecha_fin) < new Date(fecha_inicio)) {
-      return res.status(400).json({ error: "La fecha de fin no puede ser menor que la fecha de inicio." });
+      return res
+        .status(400)
+        .json({
+          error: "La fecha de fin no puede ser menor que la fecha de inicio.",
+        });
     }
 
     const pool = await sql.connect(dbConfig);
-    await pool.request()
+    await pool
+      .request()
       .input("nombre", sql.NVarChar, nombre)
       .input("descripcion", sql.NVarChar, descripcion)
       .input("tipo_proyecto", sql.VarChar, tipo_proyecto)
@@ -54,9 +59,9 @@ const guardarProyecto = async (req, res) => {
       .input("fecha_fin", sql.Date, fecha_fin)
       .input("porcentaje", sql.Int, porcentaje)
       .input("estatus", sql.VarChar, estatus)
-      .query(`INSERT INTO Proyectos
-              (nombre, descripcion, tipo_proyecto, departamento, area, integrantes, fecha_inicio, fecha_fin, porcentaje, estatus, fecha_creacion)
-              VALUES (@nombre, @descripcion, @tipo_proyecto, @departamento, @area, @integrantes, @fecha_inicio, @fecha_fin, @porcentaje, @estatus, GETDATE())`);
+      .input("rama", sql.NVarChar, rama).query(`INSERT INTO Proyectos
+             (nombre, descripcion, tipo_proyecto, departamento, area, integrantes, fecha_inicio, fecha_fin, porcentaje, estatus, rama, fecha_creacion)
+              VALUES (@nombre, @descripcion, @tipo_proyecto, @departamento, @area, @integrantes, @fecha_inicio, @fecha_fin, @porcentaje, @estatus, @rama, GETDATE())`);
 
     res.json({ nombre });
   } catch (error) {
@@ -74,6 +79,7 @@ const editarProyecto = async (req, res) => {
     departamento,
     area,
     integrantes,
+    rama, // 👈 nuevo
     fecha_fin,
     porcentaje,
     estatus,
@@ -82,16 +88,22 @@ const editarProyecto = async (req, res) => {
   try {
     // Obtener la fecha_inicio desde la base de datos para validación
     const pool = await sql.connect(dbConfig);
-    const consulta = await pool.request()
+    const consulta = await pool
+      .request()
       .input("id", sql.Int, id)
       .query("SELECT fecha_inicio FROM Proyectos WHERE id = @id");
 
     const fechaInicioBD = consulta.recordset[0]?.fecha_inicio;
     if (fechaInicioBD && new Date(fecha_fin) < new Date(fechaInicioBD)) {
-      return res.status(400).json({ error: "La fecha de fin no puede ser menor que la fecha de inicio." });
+      return res
+        .status(400)
+        .json({
+          error: "La fecha de fin no puede ser menor que la fecha de inicio.",
+        });
     }
 
-    await pool.request()
+    await pool
+      .request()
       .input("id", sql.Int, id)
       .input("nombre", sql.NVarChar, nombre)
       .input("descripcion", sql.NVarChar, descripcion)
@@ -102,17 +114,18 @@ const editarProyecto = async (req, res) => {
       .input("fecha_fin", sql.Date, fecha_fin)
       .input("porcentaje", sql.Int, porcentaje)
       .input("estatus", sql.VarChar, estatus)
-      .query(`UPDATE Proyectos SET
-                nombre = @nombre,
-                descripcion = @descripcion,
-                tipo_proyecto = @tipo_proyecto,
-                departamento = @departamento,
-                area = @area,
-                integrantes = @integrantes,
-                fecha_fin = @fecha_fin,
-                porcentaje = @porcentaje,
-                estatus = @estatus
-              WHERE id = @id`);
+      .input("rama", sql.VarChar, rama).query(`UPDATE Proyectos SET
+              nombre = @nombre,
+              descripcion = @descripcion,
+              tipo_proyecto = @tipo_proyecto,
+              departamento = @departamento,
+              area = @area,
+              integrantes = @integrantes,
+              rama = @rama, -- 👈 nuevo campo
+              fecha_fin = @fecha_fin,
+              porcentaje = @porcentaje,
+              estatus = @estatus
+            WHERE id = @id`);
 
     res.json({ success: true });
   } catch (error) {

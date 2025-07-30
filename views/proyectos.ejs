@@ -3,10 +3,10 @@
 <h4 class="mb-4">Catálogo de Proyectos</h4>
 <div id="seleccionProyecto" class="mb-3 text-muted fw-semibold"></div>
 
-<div class="table-container">
-  <button class="btn btn-primary mb-3" onclick="agregarFila()">
-    Agregar Proyecto
-  </button>
+<button id="btnAgregarProyecto" class="btn btn-primary mb-3" onclick="agregarFila()">
+  Agregar Proyecto
+</button>
+
 
   <div class="table-responsive">
     <table
@@ -18,6 +18,7 @@
         <tr>
           <th>ID</th>
           <th>Proyecto</th>
+          <th>Rama</th>
           <th>Descripción</th>
           <th>Tipo</th>
           <th>Departamento(s)</th>
@@ -39,6 +40,7 @@
         >
           <td><%= p.id %></td>
           <td><%= p.nombre %></td>
+          <td><%= p.rama %></td>
           <td><%= p.descripcion %></td>
           <td><%= p.tipo_proyecto %></td>
           <td><%= p.departamento %></td>
@@ -48,15 +50,28 @@
           <td><%= p.fecha_fin.toISOString().split('T')[0] %></td>
           <td><%= p.porcentaje %> %</td>
           <td><%= p.estatus %></td>
-          <td>
-            <button
-              class="btn btn-sm btn-outline-warning"
-              onclick="editarProyecto(this)"
-              title="Editar"
-            >
-              <i class="bi bi-pencil-square"></i>
-            </button>
-          </td>
+          
+
+         
+            <td class="text-center">
+  <button
+    class="btn btn-sm btn-outline-secondary me-1"
+  onclick="agregarFila()"
+    title="Agregar Proyecto"
+  >
+    <i class="bi bi-database-fill-gear"></i>
+  </button>
+
+  <button
+    class="btn btn-sm btn-outline-warning"
+    onclick="editarProyecto(this)"
+    title="Editar"
+  >
+    <i class="bi bi-pencil-square"></i>
+  </button>
+</td>
+            
+     
         </tr>
 
         <% }) %>
@@ -93,3 +108,17 @@
 </datalist>
 <!-- Cargamos el script con lógica de agregar filas -->
 <!--<script src="/js/proyecto.js"></script>-->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const tbody = document.getElementById("cuerpoTablaProyectos");
+    const botonAgregar = document.getElementById("btnAgregarProyecto");
+
+    if (tbody.children.length === 0) {
+      // Mostrar el botón si no hay datos
+      botonAgregar.style.display = "inline-block";
+    } else {
+      // Ocultar el botón si ya hay registros
+      botonAgregar.style.display = "none";
+    }
+  });
+</script>

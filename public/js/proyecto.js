@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
       pageLength: 5,
       scrollX: true,
       responsive: true,
+      order: [[0, "desc"]], // 👈 columna 0 (ID), descendente
     });
   }
 });
@@ -49,6 +50,15 @@ function agregarFila() {
   fila.innerHTML = `
     <td>—</td>
     <td><input type="text" class="form-control" name="nombre" placeholder="Proyecto" required></td>
+    <td>
+  <select class="form-select" name="rama" required>
+    <option value="">Seleccione una rama</option>
+    <option value="Dir.Administrativa">Dir.Administrativa</option>
+    <option value="Dir.Operativa">Dir.Operativa</option>
+    <option value="Consejo">Consejo</option>
+  </select>
+</td>
+
     <td><input type="text" class="form-control" name="descripcion" placeholder="Descripción"></td>
     <td>
       <select class="form-select" name="tipo_proyecto" required>
@@ -92,13 +102,18 @@ function agregarFila() {
 <td>
   <span class="indicador-badge badge rounded-pill bg-secondary">Sin estado</span>
 </td>
-   <td>
- <input type="hidden" name="estatus" value="POR ATENDER">
-  <button class="btn btn-success btn-sm" onclick="guardarProyecto(this)">Guardar</button>
-   <button class="btn btn-danger btn-sm cancelar-proyecto">Cancelar</button>
+  
+ 
+<td class="text-center">
+<input type="hidden" name="estatus" value="POR ATENDER">
+   <button class="btn btn-success btn-sm me-1" onclick="guardarProyecto(this)"><i class="bi bi-check-circle"></i></button>
+    <button class="btn btn-secondary btn-sm" onclick="cancelarProyecto(this)"><i class="bi bi-x-circle"></i></button>
 </td>
-  `;
 
+
+  `;
+  //<button class="btn btn-success btn-sm" onclick="guardarProyecto(this)">Guardar</button>
+  //<button class="btn btn-danger btn-sm cancelar-proyecto">Cancelar</button>
   tbody.insertBefore(fila, tbody.firstChild); // 🔝 Esto la agrega al principio
 
   const slider = fila.querySelector(".porcentaje-slider");
@@ -312,7 +327,8 @@ async function guardarProyecto(boton) {
   inputs.forEach((input) => {
     data[input.name] = input.value;
   });
-
+// Aquí agregas manualmente la rama (porque puede estar fuera de inputs o no haber sido detectado)
+data.rama = fila.querySelector('select[name="rama"]').value;
   // ✅ Asegurarse de que porcentaje sea número entero
   data.porcentaje = parseInt(data.porcentaje) || 0;
 
@@ -320,6 +336,7 @@ async function guardarProyecto(boton) {
   const errores = [];
 
   if (!data.nombre?.trim()) errores.push("nombre del proyecto");
+  if (!data.rama?.trim()) errores.push("Rama");
   if (!data.descripcion?.trim()) errores.push("descripción");
   if (!data.tipo_proyecto) errores.push("tipo de proyecto");
   if (!data.departamento?.trim()) errores.push("departamento(s)");
@@ -365,12 +382,13 @@ async function guardarProyecto(boton) {
       Swal.fire({
         icon: "success",
         title: "¡Proyecto registrado!",
-        text: resultado.nombre
-          ? `El proyecto "${resultado.nombre}" fue guardado correctamente.`
-          : "Proyecto guardado correctamente.",
+        text: `El proyecto "${resultado.nombre}" fue guardado correctamente.`,
         timer: 2000,
         showConfirmButton: false,
-      }).then(() => location.reload());
+      }).then(() => {
+        document.getElementById("btnAgregarProyecto").style.display = "none"; // Ocultar
+        location.reload();
+      });
     } else {
       const error = await resp
         .json()
@@ -389,35 +407,45 @@ async function guardarProyecto(boton) {
 
 //////////////PROCESO PARA EDITAR DATOS DE LA TABLA PROYECTO /////////////////////
 // Dentro de proyecto.js
-
+// Dentro de proyecto.js
 function editarProyecto(boton) {
   const fila = boton.closest("tr");
   const celdas = fila.children;
 
-fila.dataset.original = JSON.stringify({
-  id: celdas[0].textContent.trim(),
-  nombre: celdas[1].textContent.trim(),
-  descripcion: celdas[2].textContent.trim(),
-  tipo_proyecto: celdas[3].textContent.trim(),
-  departamento: celdas[4].textContent.trim(),
-  area: celdas[5].textContent.trim(),
-  integrantes: celdas[6].textContent.trim(),
-  fecha_inicio: celdas[7].textContent.trim(),
-  fechaFin: celdas[8].textContent.trim(),
-  porcentaje: parseInt(celdas[9].textContent),
-  estatus: celdas[10].textContent.trim(),
-});
+  fila.dataset.original = JSON.stringify({
+    id: celdas[0].textContent.trim(),
+    nombre: celdas[1].textContent.trim(),
+    rama: celdas[2].textContent.trim(),
+    descripcion: celdas[3].textContent.trim(),
+    tipo_proyecto: celdas[4].textContent.trim(),
+    departamento: celdas[5].textContent.trim(),
+    area: celdas[6].textContent.trim(),
+    integrantes: celdas[7].textContent.trim(),
+    fecha_inicio: celdas[8].textContent.trim(),
+    fechaFin: celdas[9].textContent.trim(),
+    porcentaje: parseInt(celdas[10].textContent),
+    estatus: celdas[11].textContent.trim(),
+  });
 
   celdas[1].innerHTML = `<input class="form-control" name="nombre" value="${celdas[1].textContent.trim()}">`;
-  celdas[2].innerHTML = `<input class="form-control" name="descripcion" value="${celdas[2].textContent.trim()}">`;
-  celdas[3].innerHTML = `
+
+  celdas[2].innerHTML = `
+    <select class="form-select" name="rama">
+      <option value="">Seleccione una rama</option>
+      <option value="Dir.Administrativa" ${JSON.parse(fila.dataset.original).rama === "Dir.Administrativa" ? "selected" : ""}>Dir.Administrativa</option>
+      <option value="Dir.Operativa" ${JSON.parse(fila.dataset.original).rama === "Dir.Operativa" ? "selected" : ""}>Dir.Operativa</option>
+      <option value="Consejo" ${JSON.parse(fila.dataset.original).rama === "Consejo" ? "selected" : ""}>Consejo</option>
+    </select>`;
+
+  celdas[3].innerHTML = `<input class="form-control" name="descripcion" value="${celdas[3].textContent.trim()}">`;
+  celdas[4].innerHTML = `
     <select class="form-select" name="tipo_proyecto">
-      <option value="conjunto" ${celdas[3].textContent.trim() === "conjunto" ? "selected" : ""}>Conjunto</option>
-      <option value="directivos" ${celdas[3].textContent.trim() === "directivos" ? "selected" : ""}>Directivos</option>
+      <option value="conjunto" ${celdas[4].textContent.trim() === "conjunto" ? "selected" : ""}>Conjunto</option>
+      <option value="directivos" ${celdas[4].textContent.trim() === "directivos" ? "selected" : ""}>Directivos</option>
     </select>`;
 
   // Departamento
-  celdas[4].innerHTML = `
+  celdas[5].innerHTML = `
     <div>
       <ul class="mb-1 small text-info" style="list-style-type: disc; padding-left: 1rem;"></ul>
       <input type="text" class="form-control mb-1" placeholder="Escribe un departamento">
@@ -425,7 +453,7 @@ fila.dataset.original = JSON.stringify({
     </div>`;
 
   // Área
-  celdas[5].innerHTML = `
+  celdas[6].innerHTML = `
     <div>
       <ul class="mb-1 small text-success" style="list-style-type: disc; padding-left: 1rem;"></ul>
       <input type="text" class="form-control mb-1" placeholder="Escribe o selecciona área" list="listaAreas">
@@ -433,16 +461,15 @@ fila.dataset.original = JSON.stringify({
     </div>`;
 
   // Integrantes
-  celdas[6].innerHTML = `
+  celdas[7].innerHTML = `
     <div>
       <ul class="mb-1 small text-primary" style="list-style-type: disc; padding-left: 1rem;"></ul>
       <input type="text" class="form-control mb-1" placeholder="Escribe o selecciona integrante" list="listaIntegrantes">
       <button type="button" class="btn btn-sm btn-primary mt-1" onclick="editarAgregarLista(this, 'integrantes')">Modificar</button>
     </div>`;
 
-  // Inicializar listas
   ["departamento", "area", "integrantes"].forEach((campo, idx) => {
-    const celda = celdas[4 + idx];
+    const celda = celdas[5 + idx];
     const ul = celda.querySelector("ul");
     const originales = JSON.parse(fila.dataset.original)[campo].split(";").map(x => x.trim()).filter(x => x);
     originales.forEach(val => {
@@ -455,24 +482,23 @@ fila.dataset.original = JSON.stringify({
     });
   });
 
-  celdas[8].innerHTML = `<input type="date" class="form-control" name="fecha_fin" value="${celdas[8].textContent.trim()}">`;
+  celdas[9].innerHTML = `<input type="date" class="form-control" name="fecha_fin" value="${celdas[9].textContent.trim()}">`;
 
-  const porcentajeValor = parseInt(celdas[9].textContent);
-  celdas[9].innerHTML = `
+  const porcentajeValor = parseInt(celdas[10].textContent);
+  celdas[10].innerHTML = `
     <div class="d-flex align-items-center gap-2">
       <span class="porcentaje-texto">${porcentajeValor}%</span>
       <input type="range" class="form-range porcentaje-slider" name="porcentaje" min="0" max="100" value="${porcentajeValor}">
     </div>`;
 
-  // Mostrar estatus editable
   const badge = document.createElement("span");
   badge.className = "indicador-badge badge rounded-pill bg-secondary";
   badge.textContent = JSON.parse(fila.dataset.original).estatus;
-  celdas[10].innerHTML = "";
-  celdas[10].appendChild(badge);
+  celdas[11].innerHTML = "";
+  celdas[11].appendChild(badge);
 
-  const slider = celdas[9].querySelector(".porcentaje-slider");
-  const texto = celdas[9].querySelector(".porcentaje-texto");
+  const slider = celdas[10].querySelector(".porcentaje-slider");
+  const texto = celdas[10].querySelector(".porcentaje-texto");
 
   slider.addEventListener("input", () => {
     const val = parseInt(slider.value);
@@ -493,10 +519,11 @@ fila.dataset.original = JSON.stringify({
     }
   });
 
-  celdas[11].innerHTML = `
+  celdas[12].innerHTML = `
     <button class="btn btn-success btn-sm me-1" onclick="guardarEdicion(this)"><i class="bi bi-check-circle"></i></button>
     <button class="btn btn-secondary btn-sm" onclick="cancelarEdicion(this)"><i class="bi bi-x-circle"></i></button>`;
 }
+
 
 function editarAgregarLista(boton, campo) {
   const contenedor = boton.closest("td");
@@ -509,7 +536,9 @@ function editarAgregarLista(boton, campo) {
     return;
   }
 
-  const yaExiste = Array.from(ul.children).some(li => li.textContent === valor);
+  const yaExiste = Array.from(ul.children).some(
+    (li) => li.textContent === valor
+  );
   if (yaExiste) {
     alert("⚠️ El valor ya existe en la lista.");
     return;
@@ -524,26 +553,30 @@ function editarAgregarLista(boton, campo) {
   input.value = "";
 }
 
-
 function guardarEdicion(boton) {
   const fila = boton.closest("tr");
   const celdas = fila.children;
 
   const serializarLista = (celda) =>
-    Array.from(celda.querySelectorAll("ul li")).map(li => li.textContent.trim()).join(";");
+    Array.from(celda.querySelectorAll("ul li"))
+      .map((li) => li.textContent.trim())
+      .join(";");
 
   const data = {
     id: parseInt(celdas[0].textContent.trim()),
     nombre: celdas[1].querySelector("input").value.trim(),
-    descripcion: celdas[2].querySelector("input").value.trim(),
-    tipo_proyecto: celdas[3].querySelector("select").value.trim(),
-    departamento: serializarLista(celdas[4]),
-    area: serializarLista(celdas[5]),
-    integrantes: serializarLista(celdas[6]),
-    fecha_fin: celdas[8].querySelector("input").value,
-    porcentaje: parseInt(celdas[9].querySelector("input").value),
+    rama: celdas[2].querySelector("select")?.value.trim() || "",
+    descripcion: celdas[3].querySelector("input").value.trim(),
+    tipo_proyecto: celdas[4].querySelector("select").value.trim(),
+    departamento: serializarLista(celdas[5]),
+    area: serializarLista(celdas[6]),
+    integrantes: serializarLista(celdas[7]),
+    fecha_inicio: celdas[8].textContent.trim(), // asumiendo que no se edita
+    fecha_fin: celdas[9].querySelector("input").value,
+    porcentaje: parseInt(celdas[10].querySelector("input").value),
   };
 
+  // Determina el estatus en base al porcentaje
   if (data.porcentaje === 100) data.estatus = "COMPLETO";
   else if (data.porcentaje >= 50) data.estatus = "ATENDIÉNDOSE";
   else if (data.porcentaje === 0) data.estatus = "POR ATENDER";
@@ -570,36 +603,57 @@ function guardarEdicion(boton) {
     });
 }
 
+
 /////////////////////////////////PROCESO BOTON PARA CANCELAR EDITAR////////////////
 function cancelarEdicion(boton) {
   const fila = boton.closest("tr");
-  const data = JSON.parse(fila.dataset.original);
+  const celdas = fila.children;
+  const original = JSON.parse(fila.dataset.original);
 
-  fila.innerHTML = `
-    <td>${data.id}</td>
-    <td>${data.nombre}</td>
-    <td>${data.descripcion}</td>
-    <td>${data.tipo_proyecto}</td>
-    <td>${data.departamento}</td>
-    <td>${data.area}</td>
-    <td>${data.integrantes}</td>
-    <td>${data.fecha_inicio}</td>
-    <td>${data.fechaFin}</td>
-    <td>${data.porcentaje} %</td>
-    <td>${data.estatus}</td>
-    <td>
-      <button class="btn btn-sm btn-outline-warning" onclick="editarProyecto(this)" title="Editar">
-        <i class="bi bi-pencil-square"></i>
-      </button>
-    </td>
-  `;
+  celdas[1].innerHTML = original.nombre;
+  celdas[2].innerHTML = original.rama;
+  celdas[3].innerHTML = original.descripcion;
+  celdas[4].innerHTML = original.tipo_proyecto;
+  celdas[5].innerHTML = original.departamento;
+  celdas[6].innerHTML = original.area;
+  celdas[7].innerHTML = original.integrantes;
+  celdas[8].innerHTML = original.fecha_inicio;
+  celdas[9].innerHTML = original.fechaFin;
+  celdas[10].innerHTML = `${original.porcentaje} %`;
+  celdas[11].innerHTML = original.estatus;
 
+  celdas[12].innerHTML = `
+    <button
+      class="btn btn-sm btn-outline-secondary me-1"
+      onclick="agregarFila()"
+      title="Agregar Proyecto"
+    >
+      <i class="bi bi-database-fill-gear"></i>
+    </button>
+    <button
+      class="btn btn-sm btn-outline-warning"
+      onclick="editarProyecto(this)"
+      title="Editar"
+    >
+      <i class="bi bi-pencil-square"></i>
+    </button>`;
+}
+
+function cancelarProyecto(boton) {
   Swal.fire({
-    icon: "info",
-    title: "Edición cancelada",
-    text: `No se aplicaron cambios al proyecto "${data.nombre}".`,
-    timer: 1500,
-    showConfirmButton: false
+    title: "¿Cancelar proyecto?",
+    text: "Se perderán los datos ingresados.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#6c757d",
+    confirmButtonText: "Sí, cancelar",
+    cancelButtonText: "Volver",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const fila = boton.closest("tr");
+      fila.remove();
+    }
   });
 }
 
