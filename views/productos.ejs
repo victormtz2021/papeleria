@@ -1,0 +1,190 @@
+<main class="container mt-4">
+  <h4 class="mb-3">Catálogo de Productos</h4>
+
+  <div class="card mb-4">
+    <div class="card-header bg-light">Nuevo producto</div>
+
+    <div class="card-body">
+      <form id="formProducto">
+        <div class="row g-3">
+          <div class="col-md-2">
+            <label class="form-label">Cantidad</label>
+            <input
+              type="number"
+              class="form-control"
+              name="cantidad"
+              required
+            />
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Artículo</label>
+            <input
+              type="text"
+              class="form-control"
+              name="nombre_articulo"
+              required
+            />
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label">Clave SAT</label>
+            <input
+              id="claveSAT"
+              class="form-control"
+              name="clave_sat"
+              placeholder="Clave SAT *"
+              required
+            />
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Descripción</label>
+            <input
+              type="text"
+              class="form-control"
+              name="descripcion"
+              required
+            />
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label">Unidad SAT</label>
+            <input
+              id="unidadSAT"
+              class="form-control"
+              name="unidad_sat"
+              placeholder="Unidad SAT *"
+              required
+            />
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Precio unitario</label>
+            <input
+              type="number"
+              step="0.01"
+              class="form-control"
+              name="precio_unitario"
+              required
+            />
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Fecha del producto</label>
+            <input
+              type="date"
+              class="form-control"
+              name="fecha_producto"
+              required
+            />
+          </div>
+
+          <div class="d-flex gap-2 mt-3">
+            <button
+              type="submit"
+              class="btn btn-primary d-flex align-items-center gap-2"
+            >
+              <i class="bi bi-save"></i>
+              <span>Guardar producto</span>
+            </button>
+
+            <button
+              type="button"
+              id="btnVerEliminados"
+              class="btn btn-outline-danger d-flex align-items-center gap-2"
+              data-bs-toggle="modal"
+              data-bs-target="#modalProductosEliminados"
+            >
+              <i class="bi bi-trash3"></i>
+              <span>Ver productos eliminados</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header bg-light">Productos registrados</div>
+    <div class="card-body">
+      <table class="table table-bordered table-hover" id="tablaProductos">
+        <thead class="table-light">
+          <tr>
+            <th>Cantidad</th>
+            <th>Artículo</th>
+            <th>Clave SAT</th>
+            <th>Descripción</th>
+            <th>Unidad SAT</th>
+            <th>Precio</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% productos.forEach(p => { %>
+          <tr data-id="<%= p.id %>">
+            <td><%= p.cantidad %></td>
+            <td><%= p.nombre_articulo %></td>
+            <td><%= p.clave_sat %></td>
+            <td><%= p.descripcion %></td>
+            <td><%= p.unidad_sat %></td>
+            <td>$<%= p.precio_unitario.toFixed(2) %></td>
+            <td><%= p.fecha_producto.toISOString().split("T")[0] %></td>
+            <td>
+              <button class="btn btn-sm btn-outline-warning btnEditar">
+                <i class="bi bi-pencil-square"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger btnEliminar">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- Modal de productos eliminados -->
+<div
+  class="modal fade"
+  id="modalProductosEliminados"
+  tabindex="-1"
+  aria-labelledby="modalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content shadow">
+      <div class="modal-header">
+        <h5 class="modal-title">Productos eliminados</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Cerrar"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered table-striped" id="tablaEliminados">
+          <thead class="table-light">
+            <tr>
+              <th>Cant.</th>
+              <th>Artículo</th>
+              <th>Clave SAT</th>
+              <th>Descripción</th>
+              <th>Unidad SAT</th>
+              <th>Precio</th>
+              <th>Fecha</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Se rellena dinámicamente desde productos.js -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

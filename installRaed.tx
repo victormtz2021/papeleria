@@ -1,0 +1,69 @@
+@echo off
+echo ================================
+echo Instalando dependencias del proyecto Node.js
+echo ================================
+
+:: Asegúrate de estar en la carpeta del proyecto
+echo.
+echo Instalando Express y middlewares...
+npm install express express-session express-ejs-layouts ejs
+
+echo.
+echo Instalando bcrypt para encriptar contraseñas...
+npm install bcrypt
+
+echo.
+echo Instalando cliente para SQL Server...
+npm install mssql
+
+echo.
+echo Instalando dotenv para variables de entorno...
+npm install dotenv
+
+echo.
+echo Instalando Socket.IO para comunicación en tiempo real...
+npm install socket.io socket.io-client
+
+echo.
+echo Instalando nodemon como dependencia de desarrollo...
+npm install --save-dev nodemon
+
+npm install ejs
+
+echo.
+echo ================================
+echo Instalación completada.
+echo Puedes iniciar tu servidor con:
+echo   node app.js
+echo o en modo desarrollo con:
+echo   npx nodemon app.js
+echo ================================
+pause
+
+para generar una contraseña hash bcrypt
+node generarHash.js
+
+
+USE Papeleria;
+GO
+
+INSERT INTO dbo.login (
+    nombre_completo,
+    correo,
+    usuario,
+    contrasena,
+    rol,
+    estatus,
+    fecha_registro,
+    ip_registro
+)
+VALUES (
+    'Administrador General',
+    'admin@correo.com',
+    'admin',
+    '$2b$10$KJZmC7S/Pi7GvOlh6mF1T.j23YmZn97AHYMp2VzFGDOpWyhErMeV6', -- este es el hash
+    'admin',
+    1,
+    GETDATE(),
+    '127.0.0.1'
+);

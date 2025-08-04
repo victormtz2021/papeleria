@@ -1,0 +1,74 @@
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+ <button id="btnAgregarUsuario" class="btn btn-primary mb-3">
+  <i class="bi bi-plus-circle"></i> Agregar Usuario
+</button>
+<!-- Botón -->
+<button class="btn btn-outline-secondary mb-3" data-bs-toggle="modal" data-bs-target="#modalUsuariosEliminados">
+  <i class="bi bi-trash3"></i> Ver usuarios eliminados
+</button>
+
+
+<table class="table table-bordered table-striped" id="tablaUsuarios">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Usuario</th>
+      <th>Correo</th>
+      <th>Contraseña</th>
+      <th>Rol</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody id="cuerpoTablaUsuarios">
+    <% usuarios.forEach(u => { %>
+      <tr>
+        <td><%= u.nombre_completo %></td>
+        <td><%= u.usuario %></td>
+        <td><%= u.correo %></td>
+        <td>••••••</td>
+        <td><%= u.rol %></td>
+        <td>
+           <button type="button"  class="btn btn-sm btn-outline-warning btnEditar"> <i class="bi bi-pencil-square"></i></button>
+          <form action="/usuarios/eliminar" method="POST" class="d-inline">
+            <input type="hidden" name="id" value="<%= u.id %>">
+            <button class="btn btn-sm btn-outline-danger btn-sm"> <i class="bi bi-trash3-fill"></i></button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+
+</div>
+
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="modalUsuariosEliminados" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content shadow">
+      <div class="modal-header">
+        <h5 class="modal-title">Usuarios Eliminados</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered table-striped" id="tablaEliminados">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Usuario</th>
+              <th>Correo</th>
+              <th>Rol</th>
+              <th>Fecha de baja</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Aquí se insertarán dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

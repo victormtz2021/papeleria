@@ -37,10 +37,6 @@ app.use((req, res, next) => {
 
 
 
-
-
-
-
 // Middleware y configuración
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -73,8 +69,24 @@ app.get('/dashboard', (req, res) => {
   });
 });
 
-const planeacionesRoutes = require('./routes/planeacionesRoutes');
-app.use('/planeaciones', planeacionesRoutes);
+
+app.get('/', (req, res) => {
+  res.redirect('/login');
+});
+
+
+const usuariosRoutes = require('./routes/usuariosRoutes');
+app.use('/usuarios', usuariosRoutes);
+
+const productosRoutes = require("./routes/productosRoutes");
+app.use("/productos", productosRoutes);
+
+
+// Ruta catch-all para páginas no encontradas
+app.use((req, res) => {
+  res.status(404).render('404', { url: req.originalUrl });
+});
+
 
 /*
 const apiRoutes = require('./routes/apiRoutes');
@@ -110,7 +122,7 @@ io.on("connection", (socket) => {
 });
 
 // Iniciar servidor en IP accesible por red
-const PORT = process.env.PORT || 3080;
+const PORT = process.env.PORT || 3070;
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
