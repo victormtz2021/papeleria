@@ -118,6 +118,7 @@
             <th>Unidad SAT</th>
             <th>Precio</th>
             <th>Fecha</th>
+             <th>Stock</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -131,6 +132,7 @@
             <td><%= p.unidad_sat %></td>
             <td>$<%= p.precio_unitario.toFixed(2) %></td>
             <td><%= p.fecha_producto.toISOString().split("T")[0] %></td>
+            <td data-stock><%= p.stock_maximo ? Math.round((p.cantidad / p.stock_maximo) * 100) + '%' : 'N/A' %></td> <!-- 🆕 Celda para badge -->
             <td>
               <button class="btn btn-sm btn-outline-warning btnEditar">
                 <i class="bi bi-pencil-square"></i>

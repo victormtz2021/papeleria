@@ -1,17 +1,15 @@
 const sql = require("mssql");
-const dbConfig = require("../db/config"); // Asegúrate de tener este archivo con tus credenciales
+const dbConfig = require("../db/config"); // Configuración de la conexión a SQL Server
 
 // ==============================
-// 📌 Mostrar todos los productos
+// 📌 Mostrar todos los productos activos
 // ==============================
 exports.mostrarProductos = async (req, res) => {
   try {
     const pool = await sql.connect(dbConfig);
     const resultado = await pool
       .request()
-      .query(
-        "SELECT * FROM productos WHERE estatus = 1 ORDER BY fecha_producto DESC"
-      );
+      .query("SELECT * FROM productos WHERE estatus = 1 ORDER BY fecha_producto DESC");
 
     res.render("productos", { productos: resultado.recordset });
   } catch (err) {
@@ -21,7 +19,7 @@ exports.mostrarProductos = async (req, res) => {
 };
 
 // ==============================
-// 📌 Agregar nuevo producto
+// ➕ Agregar nuevo producto
 // ==============================
 exports.agregarProducto = async (req, res) => {
   const {
@@ -34,21 +32,20 @@ exports.agregarProducto = async (req, res) => {
     fecha_producto,
   } = req.body;
 
-  // 🔠 Función para capitalizar cada palabra
+  // 🔠 Capitaliza cada palabra del nombre del artículo
   const capitalizar = (texto) =>
     texto
       .trim()
       .toLowerCase()
-      .replace(/\s+/g, " ") // elimina espacios dobles
+      .replace(/\s+/g, " ")
       .replace(/\b\w/g, (l) => l.toUpperCase());
 
-  // 🧼 Normaliza y capitaliza el artículo
   const nombreNormalizado = capitalizar(nombre_articulo);
 
   try {
     const pool = await sql.connect(dbConfig);
 
-    // 🔎 Verificar si ya existe un artículo con ese nombre exacto
+    // 🔍 Verifica si ya existe un artículo activo con el mismo nombre
     const resultado = await pool.request()
       .input("nombre_articulo", sql.NVarChar, nombreNormalizado)
       .query(`
@@ -63,8 +60,8 @@ exports.agregarProducto = async (req, res) => {
       });
     }
 
-    // ✅ Insertar nuevo producto si no hay duplicado
-    await pool.request()
+    // ✅ Inserta el nuevo producto y devuelve el ID generado
+    const resultInsert = await pool.request()
       .input("cantidad", sql.Int, cantidad)
       .input("nombre_articulo", sql.NVarChar, nombreNormalizado)
       .input("clave_sat", sql.NVarChar, clave_sat)
@@ -78,23 +75,29 @@ exports.agregarProducto = async (req, res) => {
           cantidad, nombre_articulo, clave_sat, descripcion,
           unidad_sat, precio_unitario, fecha_producto, estatus, fecha_registro
         )
+        OUTPUT INSERTED.id
         VALUES (
           @cantidad, @nombre_articulo, @clave_sat, @descripcion,
           @unidad_sat, @precio_unitario, @fecha_producto, @estatus, GETDATE()
         )
-      `);2222
+      `);
 
-    res.status(200).json({ mensaje: "Producto guardado correctamente" });
+    const nuevoId = resultInsert.recordset[0].id;
+
+    // 🔁 Devuelve el ID insertado para usarlo en el frontend
+    res.status(200).json({ ok: true, id: nuevoId });
   } catch (error) {
     console.error("❌ Error al guardar producto:", error);
     res.status(500).json({ error: "Error al guardar el producto" });
   }
 };
 
-
+// ==============================
+// ✏️ Editar producto existente
+// ==============================
 exports.editarProducto = async (req, res) => {
   const {
-    id, // Asegúrate de que venga desde el frontend
+    id,
     cantidad,
     nombre_articulo,
     clave_sat,
@@ -129,51 +132,12 @@ exports.editarProducto = async (req, res) => {
         WHERE id = @id
       `);
 
-    res.json({ mensaje: "Producto actualizado correctamente" });
+    res.json({ ok: true }); // ✅ El frontend espera { ok: true }
   } catch (error) {
     console.error("❌ Error al editar producto:", error);
     res.status(500).json({ error: "Error al actualizar el producto" });
   }
 };
-
-// controllers/productosController.js
-exports.obtenerEliminados = async (req, res) => {
-  const sql = require("mssql");
-  const dbConfig = require("../db/config");
-
-  try {
-    const pool = await sql.connect(dbConfig);
-    const result = await pool
-      .request()
-      .query("SELECT * FROM productos WHERE estatus = 0 ORDER BY fecha_producto DESC");
-
-    res.status(200).json(result.recordset);
-  } catch (error) {
-    console.error("Error al obtener eliminados:", error);
-    res.status(500).json({ error: "No se pudieron obtener los productos eliminados" });
-  }
-};
-
-// controllers/productosController.js
-exports.reactivarProducto = async (req, res) => {
-  const { id } = req.params;
-  const sql = require("mssql");
-  const dbConfig = require("../db/config");
-
-  try {
-    const pool = await sql.connect(dbConfig);
-    await pool
-      .request()
-      .input("id", sql.Int, id)
-      .query("UPDATE productos SET estatus = 1 WHERE id = @id");
-
-    res.status(200).json({ mensaje: "Producto reactivado correctamente" });
-  } catch (error) {
-    console.error("Error al reactivar producto:", error);
-    res.status(500).json({ error: "No se pudo reactivar el producto" });
-  }
-};
-
 
 // ==============================
 // 🗑️ Eliminar (desactivar) producto
@@ -189,9 +153,48 @@ exports.eliminarProducto = async (req, res) => {
       .input("id", sql.Int, id)
       .query("UPDATE productos SET estatus = 0 WHERE id = @id");
 
-    res.status(200).json({ mensaje: "Producto eliminado correctamente" });
+    res.status(200).json({ ok: true, mensaje: "Producto eliminado correctamente" });
   } catch (error) {
     console.error("❌ Error al eliminar producto:", error);
     res.status(500).json({ error: "No se pudo eliminar el producto" });
+  }
+};
+
+// ==============================
+// ♻️ Reactivar producto eliminado
+// ==============================
+exports.reactivarProducto = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const pool = await sql.connect(dbConfig);
+
+    await pool
+      .request()
+      .input("id", sql.Int, id)
+      .query("UPDATE productos SET estatus = 1 WHERE id = @id");
+
+    res.status(200).json({ ok: true, mensaje: "Producto reactivado correctamente" });
+  } catch (error) {
+    console.error("❌ Error al reactivar producto:", error);
+    res.status(500).json({ error: "No se pudo reactivar el producto" });
+  }
+};
+
+// ==============================
+// 📦 Obtener productos eliminados
+// ==============================
+exports.obtenerEliminados = async (req, res) => {
+  try {
+    const pool = await sql.connect(dbConfig);
+
+    const result = await pool
+      .request()
+      .query("SELECT * FROM productos WHERE estatus = 0 ORDER BY fecha_producto DESC");
+
+    res.status(200).json(result.recordset);
+  } catch (error) {
+    console.error("❌ Error al obtener eliminados:", error);
+    res.status(500).json({ error: "No se pudieron obtener los productos eliminados" });
   }
 };
