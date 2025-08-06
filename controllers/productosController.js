@@ -198,3 +198,23 @@ exports.obtenerEliminados = async (req, res) => {
     res.status(500).json({ error: "No se pudieron obtener los productos eliminados" });
   }
 };
+
+
+exports.buscarProducto = async (req, res) => {
+  const { termino } = req.params;
+  try {
+    const pool = await sql.connect(config);
+    const resultado = await pool.request()
+      .input("termino", sql.NVarChar, `%${termino}%`)
+      .query(`
+        SELECT TOP 10 id, nombre_articulo, clave_sat, precio_unitario
+        FROM productos
+        WHERE nombre_articulo LIKE @termino OR clave_sat LIKE @termino
+      `);
+
+    res.json(resultado.recordset);
+  } catch (error) {
+    console.error("❌ Error al buscar producto:", error);
+    res.status(500).json({ error: "Error al buscar producto" });
+  }
+};

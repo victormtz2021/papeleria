@@ -81,6 +81,8 @@ app.use('/usuarios', usuariosRoutes);
 const productosRoutes = require("./routes/productosRoutes");
 app.use("/productos", productosRoutes);
 
+const ventasRoutes = require("./routes/ventasRoutes");
+app.use("/ventas", ventasRoutes);
 
 // Ruta catch-all para páginas no encontradas
 app.use((req, res) => {

@@ -22,4 +22,7 @@ router.post("/reactivar/:id", productosController.reactivarProducto);
 // routes/productosRoutes.js
 router.post("/eliminar/:id", productosController.eliminarProducto);
 
+
+router.get("/buscar/:termino", productosController.buscarProducto);
+
 module.exports = router;

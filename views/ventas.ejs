@@ -1,0 +1,57 @@
+<!-- views/ventas.ejs -->
+<main class="container mt-4">
+  <h2>💰 Nueva Venta</h2>
+
+  <!-- 🔍 Buscador de productos -->
+  <div class="row g-3">
+    <div class="col-md-6">
+      <input id="buscarProducto" class="form-control" placeholder="Buscar por nombre o clave SAT">
+    </div>
+    <div class="col-md-2">
+      <input id="cantidadProducto" type="number" class="form-control" placeholder="Cantidad" value="1" min="1">
+    </div>
+    <div class="col-md-2">
+      <button class="btn btn-primary w-100" id="btnAgregarProducto">Agregar</button>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 🛒 Carrito de productos -->
+  <table class="table table-bordered mt-3" id="tablaCarrito">
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Precio Unitario</th>
+        <th>Cantidad</th>
+        <th>Subtotal</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="text-end">
+    <h4>Total: $<span id="totalVenta">0.00</span></h4>
+  </div>
+
+  <!-- 🧾 Factura -->
+  <div class="form-check mt-3">
+    <input class="form-check-input" type="checkbox" id="chkFactura">
+    <label class="form-check-label" for="chkFactura">
+      ¿Requiere factura?
+    </label>
+  </div>
+
+  <div id="datosFiscales" style="display: none;" class="mt-3">
+    <input type="text" class="form-control mb-2" id="rfc" placeholder="RFC">
+    <input type="text" class="form-control mb-2" id="razonSocial" placeholder="Razón Social">
+    <input type="text" class="form-control mb-2" id="usoCfdi" placeholder="Uso CFDI (ej. G03)">
+    <input type="email" class="form-control mb-2" id="correoCliente" placeholder="Correo electrónico">
+  </div>
+
+  <!-- 💾 Finalizar venta -->
+  <div class="mt-4 text-end">
+    <button class="btn btn-success" id="btnFinalizarVenta">Finalizar Venta</button>
+  </div>
+</main>
